@@ -9,7 +9,7 @@
 
 </div>
 
-- This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)
+This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)
 
 ## ⏱️ Performance
 
