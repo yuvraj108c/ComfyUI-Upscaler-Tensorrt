@@ -9,7 +9,7 @@
 
 </div>
 
-This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)
+- This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)
 
 ## ⏱️ Performance
 
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 ## 🛠️ Building Tensorrt Engine
 
-1. Download one of the available [onnx models](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main) _(e.g RealESRGAN_x4.onnx)_
+1. Download one of the available [onnx models](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main). These models support dynamic image resolutions from 256x256 to 1280x1280 px (e.g 960x540, 360x640, 1280x720 etc). You can also convert other upscaler models supported by ComfyUI to onnx using [export_onnx.py](export_onnx.py)
 2. Edit model paths inside [export_trt.py](export_trt.py) accordingly and run `python export_trt.py`
 3. Place the exported engine inside ComfyUI `/models/tensorrt/upscaler` directory
 

@@ -1,5 +1,5 @@
 # run this file inside comfyui root directory
-# download the upscale models & place inside models/upscaler_modes
+# download the upscale models & place inside models/upscaler_models
 # edit the paths accordingly 
 
 import os
