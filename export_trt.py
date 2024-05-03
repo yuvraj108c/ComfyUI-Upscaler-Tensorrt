@@ -2,7 +2,12 @@ import torch
 import time
 from utilities import Engine
 
-def export_trt(trt_path: str, onnx_path: str, use_fp16: bool):
+def export_trt(trt_path=None, onnx_path=None, use_fp16=True):
+    if trt_path is None:
+        trt_path = input("Enter the path to save the TensorRT engine (.engine) file: ")
+    if onnx_path is None:
+        onnx_path = input("Enter the path to the ONNX model file (.onnx): ")
+
     engine = Engine(trt_path)
 
     torch.cuda.empty_cache()
@@ -21,4 +26,4 @@ def export_trt(trt_path: str, onnx_path: str, use_fp16: bool):
 
     return ret
 
-export_trt(trt_path="/workspace/ComfyUI/RealESRGAN_x4-fp16.engine", onnx_path="/workspace/ComfyUI/RealESRGAN_x4.onnx", use_fp16=True)
+export_trt()
