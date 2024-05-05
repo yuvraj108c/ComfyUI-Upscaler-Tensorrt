@@ -33,7 +33,16 @@ pip install -r requirements.txt
 
 ## 🛠️ Building Tensorrt Engine
 
-1. Download one of the available [onnx models](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main). These models support dynamic image resolutions from 256x256 to 1280x1280 px (e.g 960x540, 360x640, 1280x720 etc). You can also convert other upscaler models supported by ComfyUI to onnx using [export_onnx.py](export_onnx.py)
+1. Download one of the [available onnx models](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main). These onnx models support dynamic image resolutions from 256x256 to 1280x1280 px (e.g 960x540, 512x512, 1280x720 etc). Here are the original models:
+
+   - [4x-AnimeSharp](https://openmodeldb.info/models/4x-AnimeSharp)
+   - [4x-UltraSharp](https://openmodeldb.info/models/4x-UltraSharp)
+   - [4x-WTP-UDS-Esrgan](https://openmodeldb.info/models/4x-WTP-UDS-Esrgan)
+   - [4x_NMKD-Siax_200k](https://openmodeldb.info/models/4x-NMKD-Siax-CX)
+   - [4x_RealisticRescaler_100000_G](https://openmodeldb.info/models/4x-RealisticRescaler)
+   - [4x_foolhardy_Remacri](https://openmodeldb.info/models/4x-Remacri)
+   - [RealESRGAN_x4](https://openmodeldb.info/models/4x-realesrgan-x4plus)
+
 2. Run `python export_trt.py` and set onnx/engine paths accordingly
 3. Place the exported engine inside ComfyUI `/models/tensorrt/upscaler` directory
 
@@ -41,6 +50,11 @@ pip install -r requirements.txt
 
 - Insert node by `Right Click -> tensorrt -> Upscaler Tensorrt`
 - Choose the appropriate engine from the dropdown
+
+## ⚠️ Known issues
+
+- Only models with ESRGAN architecture are currently working
+- High ram usage when exporting `.pth` to `.onnx`
 
 ## 🤖 Environment tested
 
