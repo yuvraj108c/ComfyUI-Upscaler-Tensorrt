@@ -161,45 +161,6 @@ class Engine:
         self.inputs = {}
         self.outputs = {}
 
-    def refit_from_dict(self, refit_weights, is_fp16):
-        # Initialize refitter
-        refitter = trt.Refitter(self.engine, TRT_LOGGER)
-
-        refitted_weights = set()
-        # iterate through all tensorrt refittable weights
-        for trt_weight_name in refitter.get_all_weights():
-            if trt_weight_name not in refit_weights:
-                continue
-
-            # get weight from state dict
-            trt_datatype = trt.DataType.FLOAT
-            if is_fp16:
-                refit_weights[trt_weight_name] = refit_weights[trt_weight_name].half()
-                trt_datatype = trt.DataType.HALF
-
-            # trt.Weight and trt.TensorLocation
-            refit_weights[trt_weight_name] = refit_weights[trt_weight_name].cpu()
-            trt_wt_tensor = trt.Weights(
-                trt_datatype,
-                refit_weights[trt_weight_name].data_ptr(),
-                torch.numel(refit_weights[trt_weight_name]),
-            )
-            trt_wt_location = (
-                trt.TensorLocation.DEVICE
-                if refit_weights[trt_weight_name].is_cuda
-                else trt.TensorLocation.HOST
-            )
-
-            # apply refit
-            # refitter.set_named_weights(trt_weight_name, trt_wt_tensor, trt_wt_location)
-            refitter.set_named_weights(trt_weight_name, trt_wt_tensor)
-            refitted_weights.add(trt_weight_name)
-
-        assert set(refitted_weights) == set(refit_weights.keys())
-        if not refitter.refit_cuda_engine():
-            print("Error: failed to refit new weights.")
-            exit(0)
-
     def build(
         self,
         onnx_path,
@@ -238,22 +199,6 @@ class Engine:
         config.set_flag(trt.BuilderFlag.FP16) if fp16 else None
         config.set_flag(trt.BuilderFlag.REFIT) if enable_refit else None
 
-        # cache = None
-        # try:
-        #     with util.LockFile(timing_cache):
-        #         timing_cache_data = util.load_file(
-        #             timing_cache, description="tactic timing cache"
-        #         )
-        #         cache = config.create_timing_cache(timing_cache_data)
-        # except FileNotFoundError:
-        #     warning(
-        #         "Timing cache file {} not found, falling back to empty timing cache.".format(
-        #             timing_cache
-        #         )
-        #     )
-        # if cache is not None:
-        #     config.set_timing_cache(cache, ignore_mismatch=True)
-
         profiles = copy.deepcopy(p)
         for profile in profiles:
             # Last profile is used for set_calibration_profile.
@@ -266,7 +211,6 @@ class Engine:
             engine = engine_from_network(
                 network,
                 config,
-                # save_timing_cache=timing_cache,
             )
         except Exception as e:
             error(f"Failed to build engine: {e}")
