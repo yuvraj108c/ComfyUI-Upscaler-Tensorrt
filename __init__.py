@@ -5,7 +5,7 @@ import torch
 from comfy.utils import ProgressBar
 from .utilities import Engine
 
-ENGINE_DIR = os.path.join(folder_paths.models_dir,"tensorrt/upscaler")
+ENGINE_DIR = os.path.join(folder_paths.models_dir,"tensorrt","upscaler")
 
 class UpscalerTensorrt:
     @classmethod
