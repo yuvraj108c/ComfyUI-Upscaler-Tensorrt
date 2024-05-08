@@ -4,9 +4,9 @@ from utilities import Engine
 
 def export_trt(trt_path=None, onnx_path=None, use_fp16=True):
     if trt_path is None:
-        trt_path = input("Enter the path to save the TensorRT engine (.engine) file: ")
+        trt_path = input("Enter the path to save the TensorRT engine (e.g ./realesrgan.engine): ")
     if onnx_path is None:
-        onnx_path = input("Enter the path to the ONNX model file (.onnx): ")
+        onnx_path = input("Enter the path to the ONNX model (e.g ./realesrgan.onnx): ")
 
     engine = Engine(trt_path)
 
