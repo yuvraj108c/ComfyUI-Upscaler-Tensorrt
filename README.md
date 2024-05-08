@@ -59,7 +59,7 @@ pip install -r requirements.txt
 ## 🤖 Environment tested
 
 - Ubuntu 22.04 LTS, Cuda 12.3, Tensorrt 10.0.1, Python 3.10, L40s GPU
-- Windows (Not tested)
+- Windows 11
 
 ## 👏 Credits
 
