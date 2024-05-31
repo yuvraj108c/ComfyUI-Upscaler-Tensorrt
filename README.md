@@ -5,9 +5,17 @@
 [![python](https://img.shields.io/badge/python-3.10.12-green)](https://www.python.org/downloads/release/python-31012/)
 [![cuda](https://img.shields.io/badge/cuda-12.3-green)](https://developer.nvidia.com/cuda-downloads)
 [![trt](https://img.shields.io/badge/TRT-10.0-green)](https://developer.nvidia.com/tensorrt)
-[![mit](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![by-nc-sa/4.0](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en)
 
 </div>
+
+This project is licensed under [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/), everyone is FREE to access, use, modify and redistribute with the same license.  
+
+For commercial purposes, please contact me directly at yuvraj108c@gmail.com
+
+If you like the project, please give me a star! ⭐
+
+****
 
 This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)
 
@@ -65,3 +73,6 @@ pip install -r requirements.txt
 
 - [NVIDIA/Stable-Diffusion-WebUI-TensorRT](https://github.com/NVIDIA/Stable-Diffusion-WebUI-TensorRT)
 - [comfyanonymous/ComfyUI](https://github.com/comfyanonymous/ComfyUI)
+
+## License
+Licensed under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)
