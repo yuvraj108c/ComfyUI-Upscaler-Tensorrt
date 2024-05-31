@@ -75,4 +75,4 @@ pip install -r requirements.txt
 - [comfyanonymous/ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 
 ## License
-[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)
+[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
