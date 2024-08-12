@@ -9,15 +9,20 @@
 
 </div>
 
-This project is licensed under [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/), everyone is FREE to access, use, modify and redistribute with the same license.  
+<p align="center">
+  <img src="assets/node.PNG" />
+
+</p>
+
+This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)
+
+This project is licensed under [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/), everyone is FREE to access, use, modify and redistribute with the same license.
 
 For commercial purposes, please contact me directly at yuvraj108c@gmail.com
 
 If you like the project, please give me a star! ⭐
 
-****
-
-This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)
+---
 
 ## ⏱️ Performance
 
@@ -75,4 +80,5 @@ pip install -r requirements.txt
 - [comfyanonymous/ComfyUI](https://github.com/comfyanonymous/ComfyUI)
 
 ## License
+
 [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
