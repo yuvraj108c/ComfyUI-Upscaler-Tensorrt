@@ -14,7 +14,7 @@
 
 </p>
 
-This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)
+This project provides a [Tensorrt](https://github.com/NVIDIA/TensorRT) implementation for fast image upscaling inside ComfyUI (3-4x faster)
 
 This project is licensed under [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/), everyone is FREE to access, use, modify and redistribute with the same license.
 
@@ -26,7 +26,7 @@ If you like the project, please give me a star! ⭐
 
 ## ⏱️ Performance
 
-_Note: The following results were benchmarked on FP16 engines inside ComfyUI, using 100 frames_
+_Note: The following results were benchmarked on FP16 engines inside ComfyUI, using 100 identical frames_
 
 | Device |     Model     | Input Resolution (WxH) | Output Resolution (WxH) | FPS |
 | :----: | :-----------: | :--------------------: | :---------------------: | :-: |
@@ -36,7 +36,7 @@ _Note: The following results were benchmarked on FP16 engines inside ComfyUI, us
 |  L40s  | RealESRGAN_x4 |       960 x 540        |       3840 x 2160       |  2  |
 |  L40s  | RealESRGAN_x4 |      1280 x 1280       |       5120 x 5120       | 0.7 |
 
-## 🚀 Installation
+## 🚀 [1/2] Installation
 
 Navigate to the ComfyUI `/custom_nodes` directory
 
@@ -46,7 +46,7 @@ cd ./ComfyUI-Upscaler-Tensorrt
 pip install -r requirements.txt
 ```
 
-## 🛠️ Building Tensorrt Engine
+## 🛠️ [2/2] Building Tensorrt Engine
 
 1. Download one of the [available onnx models](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main). These onnx models support dynamic image resolutions from 256x256 to 1280x1280 px (e.g 960x540, 512x512, 1280x720 etc). Here are the original models:
 
