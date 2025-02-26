@@ -30,6 +30,8 @@ _Note: The following results were benchmarked on FP16 engines inside ComfyUI, us
 
 | Device |     Model     | Input Resolution (WxH) | Output Resolution (WxH) | FPS |
 | :----: | :-----------: | :--------------------: | :---------------------: | :-: |
+|  RTX4090  | 4x_foolhardy_Remacri |       512 x 512        |       2048 x 2048       |  6.4  |
+|  RTX4090  | 4x_foolhardy_Remacri |       960 x 540        |       3840 x 2160       |  2.9  |
 |  L40s  | RealESRGAN_x4 |       512 x 512        |       2048 x 2048       |  5  |
 |  L40s  | RealESRGAN_x4 |       960 x 540        |       3840 x 2160       |  2  |
 |  L40s  | RealESRGAN_x4 |      1280 x 1280       |       5120 x 5120       | 0.7 |
