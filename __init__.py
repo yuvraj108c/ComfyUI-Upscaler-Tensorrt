@@ -2,7 +2,6 @@ import os
 import folder_paths
 import numpy as np
 import torch
-import cv2
 from comfy.utils import ProgressBar
 from .trt_utilities import Engine
 from .utilities import download_file, ColoredLogger, get_final_resolutions
