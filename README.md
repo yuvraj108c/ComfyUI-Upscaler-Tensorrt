@@ -76,7 +76,7 @@ pip install -r requirements.txt
 ### 4 March 2025 (breaking)
 - Automatic tensorrt engines are built from the workflow itself, to simplify the process for non-technical people
 - Separate model loading and tensorrt processing into different nodes
-- Optimise post processing to further improve performance by around 1.5-2x
+- Optimise post processing
 
 ## ⚠️ Known issues
 
