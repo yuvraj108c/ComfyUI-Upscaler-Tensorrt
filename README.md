@@ -1,16 +1,16 @@
 <div align="center">
 
-# ComfyUI Upscaler TensorRT
+# ComfyUI Upscaler TensorRT ⚡
 
 [![python](https://img.shields.io/badge/python-3.10.12-green)](https://www.python.org/downloads/release/python-31012/)
-[![cuda](https://img.shields.io/badge/cuda-12.3-green)](https://developer.nvidia.com/cuda-downloads)
-[![trt](https://img.shields.io/badge/TRT-10.0-green)](https://developer.nvidia.com/tensorrt)
+[![cuda](https://img.shields.io/badge/cuda-12.6-green)](https://developer.nvidia.com/cuda-downloads)
+[![trt](https://img.shields.io/badge/TRT-10.8-green)](https://developer.nvidia.com/tensorrt)
 [![by-nc-sa/4.0](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en)
 
 </div>
 
 <p align="center">
-  <img src="assets/node.PNG" />
+  <img src="assets/node_v3.png" />
 
 </p>
 
@@ -30,15 +30,13 @@ _Note: The following results were benchmarked on FP16 engines inside ComfyUI, us
 
 | Device |     Model     | Input Resolution (WxH) | Output Resolution (WxH) | FPS |
 | :----: | :-----------: | :--------------------: | :---------------------: | :-: |
-|  RTX4090  | 4x_foolhardy_Remacri |       512 x 512        |       2048 x 2048       |  6.4  |
-|  RTX4090  | 4x_foolhardy_Remacri |       960 x 540        |       3840 x 2160       |  2.9  |
-|  L40s  | RealESRGAN_x4 |       512 x 512        |       2048 x 2048       |  5  |
-|  L40s  | RealESRGAN_x4 |       960 x 540        |       3840 x 2160       |  2  |
-|  L40s  | RealESRGAN_x4 |      1280 x 1280       |       5120 x 5120       | 0.7 |
+|  H100  | 4x-UltraSharp |       512 x 512        |       2048 x 2048       |  10  |
+|  H100  | 4x-UltraSharp |       960 x 540        |       3840 x 2160       |  5  |
+|  H100  | 4x-UltraSharp |       1280 x 1280      |       5120 x 5120       |  1.7  |
 
-## 🚀 [1/2] Installation
+## 🚀 Installation
 
-Navigate to the ComfyUI `/custom_nodes` directory
+Navigate to the `/ComfyUI/custom_nodes` directory
 
 ```bash
 git clone https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt.git
@@ -46,9 +44,10 @@ cd ./ComfyUI-Upscaler-Tensorrt
 pip install -r requirements.txt
 ```
 
-## 🛠️ [2/2] Building Tensorrt Engine
+## 🛠️ Supported Models
 
-1. Download one of the [available onnx models](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main). These onnx models support dynamic image resolutions from 256x256 to 1280x1280 px (e.g 960x540, 512x512, 1280x720 etc). Here are the original models:
+- These upscaler models have been tested to work with Tensorrt. Onnx are available [here](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main)
+- The exported tensorrt models support dynamic image resolutions from 256x256 to 1280x1280 px (e.g 960x540, 512x512, 1280x720 etc).
 
    - [4x-AnimeSharp](https://openmodeldb.info/models/4x-AnimeSharp)
    - [4x-UltraSharp](https://openmodeldb.info/models/4x-UltraSharp)
@@ -58,13 +57,25 @@ pip install -r requirements.txt
    - [4x_foolhardy_Remacri](https://openmodeldb.info/models/4x-Remacri)
    - [RealESRGAN_x4](https://openmodeldb.info/models/4x-realesrgan-x4plus)
 
-2. Run `python export_trt.py` and set onnx/engine paths accordingly
-3. Place the exported engine inside ComfyUI `/models/tensorrt/upscaler` directory
-
 ## ☀️ Usage
 
-- Insert node by `Right Click -> tensorrt -> Upscaler Tensorrt`
-- Choose the appropriate engine from the dropdown
+- Load [example workflow](assets/tensorrt_upscaling_workflow.json) 
+- Choose the appropriate model from the dropdown
+- The tensorrt engine will be built automatically
+- Load an image of resolution between 256-1280px
+- Set `resize_to` to resize the upscaled images to fixed resolutions
+
+## 🔧 Custom Models
+- To export other ESRGAN models, you'll have to build the onnx model first, using [export_onnx.py](scripts/export_onnx.py) 
+- Place the onnx model in `/ComfyUI/models/onnx/YOUR_MODEL.onnx`
+- Then, add your model to this list as shown: https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/blob/8f7ef5d1f713af3b4a74a64fa13a65ee5c404cd4/__init__.py#L77
+- Finally, run the same workflow and choose your model
+
+## 🚨 Updates
+### 4 March 2025 (breaking)
+- Automatic tensorrt engines are built from the workflow itself, to simplify the process for non-technical people
+- Separate model loading and tensorrt processing into different nodes
+- Optimise post processing to further improve performance by around 1.5-2x
 
 ## ⚠️ Known issues
 
@@ -73,7 +84,7 @@ pip install -r requirements.txt
 
 ## 🤖 Environment tested
 
-- Ubuntu 22.04 LTS, Cuda 12.3, Tensorrt 10.0.1, Python 3.10, L40s GPU
+- Ubuntu 22.04 LTS, Cuda 12.4, Tensorrt 10.8, Python 3.10, H100 GPU
 - Windows 11
 
 ## 👏 Credits
