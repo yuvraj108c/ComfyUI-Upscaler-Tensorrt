@@ -70,6 +70,7 @@ pip install -r requirements.txt
 - Place the onnx model in `/ComfyUI/models/onnx/YOUR_MODEL.onnx`
 - Then, add your model to this list as shown: https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/blob/8f7ef5d1f713af3b4a74a64fa13a65ee5c404cd4/__init__.py#L77
 - Finally, run the same workflow and choose your model
+- If you've tested another working tensorrt model, let me know to add it officially to this node
 
 ## 🚨 Updates
 ### 4 March 2025 (breaking)
