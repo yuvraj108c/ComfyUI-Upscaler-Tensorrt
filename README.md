@@ -68,7 +68,7 @@ pip install -r requirements.txt
 ## 🔧 Custom Models
 - To export other ESRGAN models, you'll have to build the onnx model first, using [export_onnx.py](scripts/export_onnx.py) 
 - Place the onnx model in `/ComfyUI/models/onnx/YOUR_MODEL.onnx`
-- Then, add the model to the list by [editing line 77](scripts/export_onnx.py) as shown: `"model": (["YOUR_MODEL", etc])`
+- Then, add your model to this list as shown: https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/blob/8f7ef5d1f713af3b4a74a64fa13a65ee5c404cd4/__init__.py#L77
 - Finally, run the same workflow and choose your model
 
 ## 🚨 Updates
