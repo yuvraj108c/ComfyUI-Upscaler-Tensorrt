@@ -10,7 +10,7 @@
 </div>
 
 <p align="center">
-  <img src="assets/node_v2.png" />
+  <img src="assets/node_v3.png" />
 
 </p>
 
@@ -63,6 +63,7 @@ pip install -r requirements.txt
 - Choose the appropriate model from the dropdown
 - The tensorrt engine will be built automatically
 - Load an image of resolution between 256-1280px
+- Set `resize_to` to resize the upscaled images to fixed resolutions
 
 ## 🔧 Custom Models
 - To export other ESRGAN models, you'll have to build the onnx model first, using [export_onnx.py](scripts/export_onnx.py) 
