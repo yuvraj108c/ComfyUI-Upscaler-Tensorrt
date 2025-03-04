@@ -78,6 +78,7 @@ pip install -r requirements.txt
 - Automatic tensorrt engines are built from the workflow itself, to simplify the process for non-technical people
 - Separate model loading and tensorrt processing into different nodes
 - Optimise post processing
+- Update onnx export script
 
 ## ⚠️ Known issues
 
