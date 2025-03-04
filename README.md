@@ -35,8 +35,8 @@ _Note: The following results were benchmarked on FP16 engines inside ComfyUI, us
 |  H100  | 4x-UltraSharp |       1280 x 1280      |       5120 x 5120       |  1.7  |
 
 ## 🚀 Installation
-
-Navigate to the `/ComfyUI/custom_nodes` directory
+- Install via the manager
+- Or, navigate to the `/ComfyUI/custom_nodes` directory
 
 ```bash
 git clone https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt.git
