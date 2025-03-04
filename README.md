@@ -14,7 +14,7 @@
 
 </p>
 
-This project provides a [Tensorrt](https://github.com/NVIDIA/TensorRT) implementation for fast image upscaling inside ComfyUI (2-3x faster)
+This project provides a [Tensorrt](https://github.com/NVIDIA/TensorRT) implementation for fast image upscaling inside ComfyUI (2-4x faster)
 
 This project is licensed under [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/), everyone is FREE to access, use, modify and redistribute with the same license.
 
