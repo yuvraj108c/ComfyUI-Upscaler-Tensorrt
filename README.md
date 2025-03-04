@@ -10,7 +10,7 @@
 </div>
 
 <p align="center">
-  <img src="assets/node.png" />
+  <img src="assets/node_v2.png" />
 
 </p>
 
