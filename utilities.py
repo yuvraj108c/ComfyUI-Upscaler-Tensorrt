@@ -1,277 +1,133 @@
-#
-# Copyright 2022 The HuggingFace Inc. team.
-# SPDX-FileCopyrightText: Copyright (c) 1993-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-import torch
-from torch.cuda import nvtx
-from collections import OrderedDict
-import numpy as np
-from polygraphy.backend.common import bytes_from_path
-from polygraphy import util
-from polygraphy.backend.trt import ModifyNetworkOutputs, Profile
-from polygraphy.backend.trt import (
-    engine_from_bytes,
-    engine_from_network,
-    network_from_onnx_path,
-    save_engine,
-)
-from polygraphy.logger import G_LOGGER
-import tensorrt as trt
-from logging import error, warning
+import requests
 from tqdm import tqdm
-import copy
+import logging
+import sys
 
-TRT_LOGGER = trt.Logger(trt.Logger.ERROR)
-G_LOGGER.module_severity = G_LOGGER.ERROR
+class ColoredLogger:
+    COLORS = {
+        'RED': '\033[91m',
+        'GREEN': '\033[92m',
+        'YELLOW': '\033[93m',
+        'BLUE': '\033[94m',
+        'MAGENTA': '\033[95m',
+        'RESET': '\033[0m'
+    }
 
-# Map of numpy dtype -> torch dtype
-numpy_to_torch_dtype_dict = {
-    np.uint8: torch.uint8,
-    np.int8: torch.int8,
-    np.int16: torch.int16,
-    np.int32: torch.int32,
-    np.int64: torch.int64,
-    np.float16: torch.float16,
-    np.float32: torch.float32,
-    np.float64: torch.float64,
-    np.complex64: torch.complex64,
-    np.complex128: torch.complex128,
-}
-if np.version.full_version >= "1.24.0":
-    numpy_to_torch_dtype_dict[np.bool_] = torch.bool
-else:
-    numpy_to_torch_dtype_dict[np.bool] = torch.bool
+    LEVEL_COLORS = {
+        'DEBUG': COLORS['BLUE'],
+        'INFO': COLORS['GREEN'],
+        'WARNING': COLORS['YELLOW'],
+        'ERROR': COLORS['RED'],
+        'CRITICAL': COLORS['MAGENTA']
+    }
 
-# Map of torch dtype -> numpy dtype
-torch_to_numpy_dtype_dict = {
-    value: key for (key, value) in numpy_to_torch_dtype_dict.items()
-}
-
-class TQDMProgressMonitor(trt.IProgressMonitor):
-    def __init__(self):
-        trt.IProgressMonitor.__init__(self)
-        self._active_phases = {}
-        self._step_result = True
-        self.max_indent = 5
-
-    def phase_start(self, phase_name, parent_phase, num_steps):
-        leave = False
-        try:
-            if parent_phase is not None:
-                nbIndents = (
-                    self._active_phases.get(parent_phase, {}).get(
-                        "nbIndents", self.max_indent
-                    )
-                    + 1
-                )
-                if nbIndents >= self.max_indent:
-                    return
-            else:
-                nbIndents = 0
-                leave = True
-            self._active_phases[phase_name] = {
-                "tq": tqdm(
-                    total=num_steps, desc=phase_name, leave=leave, position=nbIndents
-                ),
-                "nbIndents": nbIndents,
-                "parent_phase": parent_phase,
-            }
-        except KeyboardInterrupt:
-            # The phase_start callback cannot directly cancel the build, so request the cancellation from within step_complete.
-            _step_result = False
-
-    def phase_finish(self, phase_name):
-        try:
-            if phase_name in self._active_phases.keys():
-                self._active_phases[phase_name]["tq"].update(
-                    self._active_phases[phase_name]["tq"].total
-                    - self._active_phases[phase_name]["tq"].n
-                )
-
-                parent_phase = self._active_phases[phase_name].get("parent_phase", None)
-                while parent_phase is not None:
-                    self._active_phases[parent_phase]["tq"].refresh()
-                    parent_phase = self._active_phases[parent_phase].get(
-                        "parent_phase", None
-                    )
-                if (
-                    self._active_phases[phase_name]["parent_phase"]
-                    in self._active_phases.keys()
-                ):
-                    self._active_phases[
-                        self._active_phases[phase_name]["parent_phase"]
-                    ]["tq"].refresh()
-                del self._active_phases[phase_name]
-            pass
-        except KeyboardInterrupt:
-            _step_result = False
-
-    def step_complete(self, phase_name, step):
-        try:
-            if phase_name in self._active_phases.keys():
-                self._active_phases[phase_name]["tq"].update(
-                    step - self._active_phases[phase_name]["tq"].n
-                )
-            return self._step_result
-        except KeyboardInterrupt:
-            # There is no need to propagate this exception to TensorRT. We can simply cancel the build.
-            return False
+    def __init__(self, name="MY-APP"):
+        self.logger = logging.getLogger(name)
+        self.logger.setLevel(logging.DEBUG)
+        self.app_name = name
+        
+        # Prevent message propagation to parent loggers
+        self.logger.propagate = False
+        
+        # Clear existing handlers
+        self.logger.handlers = []
+        
+        # Create console handler
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.DEBUG)
+        
+        # Custom formatter class to handle colored components
+        class ColoredFormatter(logging.Formatter):
+            def format(self, record):
+                # Color the level name according to severity
+                level_color = ColoredLogger.LEVEL_COLORS.get(record.levelname, '')
+                colored_levelname = f"{level_color}{record.levelname}{ColoredLogger.COLORS['RESET']}"
+                
+                # Color the logger name in blue
+                colored_name = f"{ColoredLogger.COLORS['BLUE']}{record.name}{ColoredLogger.COLORS['RESET']}"
+                
+                # Set the colored components
+                record.levelname = colored_levelname
+                record.name = colored_name
+                
+                return super().format(record)
+        
+        # Create formatter with the new format
+        formatter = ColoredFormatter('[%(name)s|%(levelname)s] - %(message)s')
+        handler.setFormatter(formatter)
+        
+        self.logger.addHandler(handler)
 
 
-class Engine:
-    def __init__(
-        self,
-        engine_path,
-    ):
-        self.engine_path = engine_path
-        self.engine = None
-        self.context = None
-        self.buffers = OrderedDict()
-        self.tensors = OrderedDict()
-        self.cuda_graph_instance = None  # cuda graph
+    def debug(self, message):
+        self.logger.debug(f"{self.COLORS['BLUE']}{message}{self.COLORS['RESET']}")
 
-    def __del__(self):
-        del self.engine
-        del self.context
-        del self.buffers
-        del self.tensors
+    def info(self, message):
+        self.logger.info(f"{self.COLORS['GREEN']}{message}{self.COLORS['RESET']}")
 
-    def reset(self, engine_path=None):
-        del self.engine
-        del self.context
-        del self.buffers
-        del self.tensors
-        self.engine_path = engine_path
+    def warning(self, message):
+        self.logger.warning(f"{self.COLORS['YELLOW']}{message}{self.COLORS['RESET']}")
 
-        self.buffers = OrderedDict()
-        self.tensors = OrderedDict()
-        self.inputs = {}
-        self.outputs = {}
+    def error(self, message):
+        self.logger.error(f"{self.COLORS['RED']}{message}{self.COLORS['RESET']}")
 
-    def build(
-        self,
-        onnx_path,
-        fp16,
-        input_profile=None,
-        enable_refit=False,
-        enable_preview=False,
-        enable_all_tactics=False,
-        timing_cache=None,
-        update_output_names=None,
-    ):
-        print(f"Building TensorRT engine for {onnx_path}: {self.engine_path}")
-        p = [Profile()]
-        if input_profile:
-            p = [Profile() for i in range(len(input_profile))]
-            for _p, i_profile in zip(p, input_profile):
-                for name, dims in i_profile.items():
-                    assert len(dims) == 3
-                    _p.add(name, min=dims[0], opt=dims[1], max=dims[2])
+    def critical(self, message):
+        self.logger.critical(f"{self.COLORS['MAGENTA']}{message}{self.COLORS['RESET']}")
 
-        config_kwargs = {}
-        if not enable_all_tactics:
-            config_kwargs["tactic_sources"] = []
+def download_file(url, save_path):
+    """
+    Download a file from URL with progress bar
+    
+    Args:
+        url (str): URL of the file to download
+        save_path (str): Path to save the file as
+    """
+    GREEN = '\033[92m'
+    RESET = '\033[0m'
+    response = requests.get(url, stream=True)
+    total_size = int(response.headers.get('content-length', 0))
+    
+    with open(save_path, 'wb') as file, tqdm(
+        desc=save_path,
+        total=total_size,
+        unit='iB',
+        unit_scale=True,
+        unit_divisor=1024,
+        colour='green',
+        bar_format=f'{GREEN}{{l_bar}}{{bar}}{RESET}{GREEN}{{r_bar}}{RESET}' 
+    ) as progress_bar:
+        for data in response.iter_content(chunk_size=1024):
+            size = file.write(data)
+            progress_bar.update(size)
 
-        network = network_from_onnx_path(
-            onnx_path, flags=[trt.OnnxParserFlag.NATIVE_INSTANCENORM]
-        )
-        if update_output_names:
-            print(f"Updating network outputs to {update_output_names}")
-            network = ModifyNetworkOutputs(network, update_output_names)
+def get_final_resolutions(width, height, resize_to):
+    final_width = None
+    final_height = None
+    aspect_ratio = float(width/height)
 
-        builder = network[0]
-        config = builder.create_builder_config()
-        config.progress_monitor = TQDMProgressMonitor()
+    match resize_to:
+        case "HD":
+            final_width = 1280
+            final_height = 720
+        case "FHD":
+            final_width = 1920
+            final_height = 1080
+        case "2k":
+            final_width = 2560
+            final_height = 1440
+        case "4k":
+            final_width = 3840
+            final_height = 2160
+        case "none":
+            final_width = width*4
+            final_height = height*4
 
-        config.set_flag(trt.BuilderFlag.FP16) if fp16 else None
-        config.set_flag(trt.BuilderFlag.REFIT) if enable_refit else None
+    if aspect_ratio == 1.0:
+        final_width = final_height
 
-        profiles = copy.deepcopy(p)
-        for profile in profiles:
-            # Last profile is used for set_calibration_profile.
-            calib_profile = profile.fill_defaults(network[1]).to_trt(
-                builder, network[1]
-            )
-            config.add_optimization_profile(calib_profile)
+    if aspect_ratio < 1.0 and resize_to != "none":
+        temp = final_width
+        final_width = final_height
+        final_height = temp
 
-        try:
-            engine = engine_from_network(
-                network,
-                config,
-            )
-        except Exception as e:
-            error(f"Failed to build engine: {e}")
-            return 1
-        try:
-            save_engine(engine, path=self.engine_path)
-        except Exception as e:
-            error(f"Failed to save engine: {e}")
-            return 1
-        return 0
-
-    def load(self):
-        print(f"Loading TensorRT engine: {self.engine_path}")
-        self.engine = engine_from_bytes(bytes_from_path(self.engine_path))
-
-    def activate(self, reuse_device_memory=None):
-        if reuse_device_memory:
-            self.context = self.engine.create_execution_context_without_device_memory()
-        #    self.context.device_memory = reuse_device_memory
-        else:
-            self.context = self.engine.create_execution_context()
-
-    def allocate_buffers(self, shape_dict=None, device="cuda"):
-        nvtx.range_push("allocate_buffers")
-        for idx in range(self.engine.num_io_tensors):
-            name = self.engine.get_tensor_name(idx)
-            binding = self.engine[idx]
-            if shape_dict and binding in shape_dict:
-                shape = shape_dict[binding]["shape"]
-            else:
-                shape = self.context.get_tensor_shape(name)
-
-            dtype = trt.nptype(self.engine.get_tensor_dtype(name))
-            if self.engine.get_tensor_mode(name) == trt.TensorIOMode.INPUT:
-                self.context.set_input_shape(name, shape)
-            tensor = torch.empty(
-                tuple(shape), dtype=numpy_to_torch_dtype_dict[dtype]
-            ).to(device=device)
-            self.tensors[binding] = tensor
-        nvtx.range_pop()
-
-    def infer(self, feed_dict, stream, use_cuda_graph=False):
-        nvtx.range_push("set_tensors")
-        for name, buf in feed_dict.items():
-            self.tensors[name].copy_(buf)
-
-        for name, tensor in self.tensors.items():
-            self.context.set_tensor_address(name, tensor.data_ptr())
-        nvtx.range_pop()
-        nvtx.range_push("execute")
-        noerror = self.context.execute_async_v3(stream)
-        if not noerror:
-            raise ValueError("ERROR: inference failed.")
-        nvtx.range_pop()
-        return self.tensors
-
-    def __str__(self):
-        out = ""
-        for opt_profile in range(self.engine.num_optimization_profiles):
-            for binding_idx in range(self.engine.num_bindings):
-                name = self.engine.get_binding_name(binding_idx)
-                shape = self.engine.get_profile_shape(opt_profile, name)
-                out += f"\t{name} = {shape}\n"
-        return out
+    return (final_width, final_height)
