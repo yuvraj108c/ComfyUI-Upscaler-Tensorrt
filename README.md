@@ -47,7 +47,7 @@ pip install -r requirements.txt
 ## 🛠️ Supported Models
 
 - These upscaler models have been tested to work with Tensorrt. Onnx are available [here](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main)
-- The exported tensorrt support dynamic image resolutions from 256x256 to 1280x1280 px (e.g 960x540, 512x512, 1280x720 etc).
+- The exported tensorrt models support dynamic image resolutions from 256x256 to 1280x1280 px (e.g 960x540, 512x512, 1280x720 etc).
 
    - [4x-AnimeSharp](https://openmodeldb.info/models/4x-AnimeSharp)
    - [4x-UltraSharp](https://openmodeldb.info/models/4x-UltraSharp)
@@ -64,15 +64,15 @@ pip install -r requirements.txt
 - The tensorrt engine will be built automatically
 - Load an image of resolution between 256-1280px
 
-## 🛠️ Custom Models
+## 🔧 Custom Models
 - To export other ESRGAN models, you'll have to build the onnx model first, using [export_onnx.py](scripts/export_onnx.py) 
-- Place the onnx model to `/ComfyUI/models/onnx/YOUR_MODEL.onnx`
-- Then, add the model to the list by [editing line 77](scripts/export_onnx.py) as shown: `"model": (["4x-AnimeSharp", etc])`
+- Place the onnx model in `/ComfyUI/models/onnx/YOUR_MODEL.onnx`
+- Then, add the model to the list by [editing line 77](scripts/export_onnx.py) as shown: `"model": (["YOUR_MODEL", etc])`
 - Finally, run the same workflow and choose your model
 
-## Updates
+## 🚨 Updates
 ### 4 March 2025 (breaking)
-- Automatic tensorrt engines building from the workflow itself, to simplify model building for non-technical people
+- Automatic tensorrt engines are built from the workflow itself, to simplify the process for non-technical people
 - Separate model loading and tensorrt processing into different nodes
 - Optimise post processing to further improve performance by around 1.5-2x
 
