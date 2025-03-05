@@ -33,6 +33,9 @@ _Note: The following results were benchmarked on FP16 engines inside ComfyUI, us
 |  H100  | 4x-UltraSharp |       512 x 512        |       2048 x 2048       |  10  |
 |  H100  | 4x-UltraSharp |       960 x 540        |       3840 x 2160       |  5  |
 |  H100  | 4x-UltraSharp |       1280 x 1280      |       5120 x 5120       |  1.7  |
+|  RTX5090  | 4x-UltraSharp |       512 x 512        |       2048 x 2048       |  11  |
+|  RTX5090  | 4x-UltraSharp |       960 x 540        |       3840 x 2160       |  5  |
+|  RTX5090  | 4x-UltraSharp |       1280 x 1280      |       5120 x 5120       |  1.7  |
 
 ## 🚀 Installation
 - Install via the manager
