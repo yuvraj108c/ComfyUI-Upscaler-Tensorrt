@@ -44,29 +44,29 @@ class UpscalerTensorrt:
         pbar = ProgressBar(B)
         images_list = list(torch.split(images_bchw, split_size_or_sections=1))
 
-        upscaled_frames = []
+        upscaled_frames = torch.empty((B, C, final_height, final_width), dtype=torch.float32, device=mm.intermediate_device()) # offloaded to cpu
+        must_resize = W*4 != final_width or H*4 != final_height
 
-        for img in images_list:
+        for i, img in enumerate(images_list):
             result = upscaler_trt_model.infer({"input": img}, cudaStream)
-            upscaled_frames.append(result['output'])
+            result = result["output"]
+
+            if must_resize:
+                result = torch.nn.functional.interpolate(
+                    result, 
+                    size=(final_height, final_width),
+                    mode='bicubic',
+                    antialias=True
+                )
+            upscaled_frames[i] = result.to(mm.intermediate_device())
             pbar.update(1)
 
-        outputs = torch.cat(upscaled_frames, dim=0)
-        
-        # Batch resize if needed
-        upscaled_W, upscaled_H = outputs.shape[2], outputs.shape[3]
-        if upscaled_W != final_width or upscaled_H != final_height:
-            logger.info(f"Resizing to H:{final_height}, W:{final_width}")
-            outputs = torch.nn.functional.interpolate(
-                outputs, 
-                size=(final_height, final_width),
-                mode='bicubic',
-                antialias=True
-            )
-
+        output = upscaled_frames.permute(0, 2, 3, 1)
         upscaler_trt_model.reset() # frees engine vram
         mm.soft_empty_cache()
-        return (outputs.permute(0, 2, 3, 1).to(mm.intermediate_device()),)
+
+        logger.info(f"Output shape: {output.shape}")
+        return (output,)
 
 class LoadUpscalerTensorrtModel:
     @classmethod
