@@ -81,6 +81,7 @@ pip install -r requirements.txt
 
 ## ⚠️ Known issues
 
+- If you upgrade tensorrt version, you'll have to rebuild the engines
 - Only models with ESRGAN architecture are currently working
 - High ram usage when exporting `.pth` to `.onnx`
 
