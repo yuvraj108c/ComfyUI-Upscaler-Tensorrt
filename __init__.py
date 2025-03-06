@@ -7,6 +7,7 @@ from .trt_utilities import Engine
 from .utilities import download_file, ColoredLogger, get_final_resolutions
 import comfy.model_management as mm
 import time
+import tensorrt
 
 logger = ColoredLogger("ComfyUI-Upscaler-Tensorrt")
 
@@ -92,7 +93,13 @@ class LoadUpscalerTensorrtModel:
         os.makedirs(onnx_models_dir, exist_ok=True)
 
         onnx_model_path = os.path.join(onnx_models_dir, f"{model}.onnx")
-        tensorrt_model_path = os.path.join(tensorrt_models_dir, f"{model}_{precision}.trt")
+        
+        # Engine config, should this power be given to people to decide?
+        engine_channel = 3
+        engine_min_batch, engine_opt_batch, engine_max_batch = 1, 1, 1
+        engine_min_h, engine_opt_h, engine_max_h = 256, 512, 1280
+        engine_min_w, engine_opt_w, engine_max_w = 256, 512, 1280
+        tensorrt_model_path = os.path.join(tensorrt_models_dir, f"{model}_{precision}_{engine_min_batch}x{engine_channel}x{engine_min_h}x{engine_min_w}_{engine_opt_batch}x{engine_channel}x{engine_opt_h}x{engine_opt_w}_{engine_max_batch}x{engine_channel}x{engine_max_h}x{engine_max_w}_{tensorrt.__version__}.trt")
 
         # Download onnx & build tensorrt engine
         if not os.path.exists(tensorrt_model_path):
@@ -112,8 +119,7 @@ class LoadUpscalerTensorrtModel:
                 onnx_path=onnx_model_path,
                 fp16= True if precision == "fp16" else False, # mixed precision not working TODO: investigate
                 input_profile=[
-                    {"input": [(1,3,256,256), (1,3,512,512), (1,3,1280,1280)]}, # any sizes from 256x256 to 1280x1280
-                    # should this power be given to people to decide?
+                    {"input": [(engine_min_batch,engine_channel,engine_min_h,engine_min_w), (engine_opt_batch,engine_channel,engine_opt_h,engine_min_w), (engine_max_batch,engine_channel,engine_max_h,engine_max_w)]}, # any sizes from 256x256 to 1280x1280
                 ],
             )
             e = time.time()
