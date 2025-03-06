@@ -32,6 +32,8 @@ _Note: The following results were benchmarked on FP16 engines inside ComfyUI, us
 | :----: | :-----------: | :--------------------: | :---------------------: | :-: |
 |  RTX4090  | 4x-UltraSharp |       512 x 512        |       2048 x 2048       |  6.7  |
 |  RTX4090  | 4x-UltraSharp |       1280 x 1280      |       5120 x 5120       |  1.1  |
+|  RTX3060  | 4x-UltraSharp |       512 x 512        |       2048 x 2048       |  2.2  |
+|  RTX3060  | 4x-UltraSharp |       1280 x 1280      |       5120 x 5120       |  0.35  |
 
 ## 🚀 Installation
 - Install via the manager
