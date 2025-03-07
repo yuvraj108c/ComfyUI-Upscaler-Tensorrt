@@ -9,109 +9,34 @@ import comfy.model_management as mm
 import time
 import tensorrt
 
-def create_tiles(tensor, tile_size=(64, 64), overlap=8):
-    """
-    Creates tiles from input tensor with specified tile size and overlap, using padding for edge cases
-    """
-    B, C, H, W = tensor.shape
-    tile_h, tile_w = tile_size
-    
-    # Calculate positions for tiles
-    h_positions = range(0, H - overlap, tile_h - overlap) if H > tile_h else [0]
-    w_positions = range(0, W - overlap, tile_w - overlap) if W > tile_w else [0]
-    
-    # Calculate padding needed
-    last_h = max(h_positions) + tile_h
-    last_w = max(w_positions) + tile_w
-    pad_h = max(0, last_h - H)
-    pad_w = max(0, last_w - W)
-    
-    # Pad the input tensor if needed
-    if pad_h > 0 or pad_w > 0:
-        padded_tensor = torch.nn.functional.pad(tensor, (0, pad_w, 0, pad_h), mode='reflect')
-    else:
-        padded_tensor = tensor
-    
-    tiles = []
-    positions = []
-    
-    for h in h_positions:
-        for w in w_positions:
-            # Extract tile (now all tiles will be full size)
-            tile = padded_tensor[:, :, h:h+tile_h, w:w+tile_w]
-            tiles.append(tile)
-            positions.append((h, w))
-    
-    return tiles, positions
-
-def merge_tiles_efficient(tiles, positions, output_shape, overlap, upscale_amount=4, output_device="cpu"):
-    """
-    Memory-efficient tile merging with proper upscaling position handling
-    """
-    B, C, H, W = output_shape
-    dims = 2
-    
-    if not isinstance(upscale_amount, (tuple, list)):
-        upscale_amount = [upscale_amount] * dims
-    
-    def get_upscale_pos(dim, val):
-        up = upscale_amount[dim]
-        return up * val if not callable(up) else up(val)
-    
-    # Pre-allocate on GPU and create batch tensors
-    out = torch.zeros(output_shape, device="cuda")
-    out_div = torch.zeros(output_shape, device="cuda")
-    
-    # Create feathering masks once for reuse
-    sample_tile = tiles[0]
-    tile_h, tile_w = sample_tile.shape[2], sample_tile.shape[3]
-    base_mask = torch.ones((1, 1, tile_h, tile_w), device="cuda")
-    
-    # Vectorized feathering
-    feather = round(overlap)
-    if feather > 0:
-        for d, size in enumerate([tile_h//upscale_amount[0], tile_w//upscale_amount[1]]):
-            if feather >= size:
-                continue
-            
-            scaled_feather = feather * upscale_amount[d]
-            factors = torch.linspace(0, 1, scaled_feather + 1, device="cuda")[1:]
-            
-            if d == 0:  # Height dimension
-                base_mask[:, :, :scaled_feather] *= factors.view(-1, 1)
-                base_mask[:, :, -scaled_feather:] *= factors.flip(0).view(-1, 1)
-            else:  # Width dimension
-                base_mask[:, :, :, :scaled_feather] *= factors.view(1, -1)
-                base_mask[:, :, :, -scaled_feather:] *= factors.flip(0).view(1, -1)
-    
-    # Process tiles in batches
-    batch_size = 16
-    for i in range(0, len(tiles), batch_size):
-        batch_tiles = tiles[i:i+batch_size]
-        batch_positions = positions[i:i+batch_size]
-        
-        # Process batch
-        for tile, (y, x) in zip(batch_tiles, batch_positions):
-            up_y = round(get_upscale_pos(0, y))
-            up_x = round(get_upscale_pos(1, x))
-            
-            curr_h, curr_w = min(tile_h, H - up_y), min(tile_w, W - up_x)
-            
-            if tile.shape[2] > curr_h or tile.shape[3] > curr_w:
-                tile = tile[:, :, :curr_h, :curr_w]
-                mask = base_mask[:, :, :curr_h, :curr_w]
-            else:
-                mask = base_mask
-            
-            # Use in-place operations
-            out[:, :, up_y:up_y+curr_h, up_x:up_x+curr_w].add_(tile * mask)
-            out_div[:, :, up_y:up_y+curr_h, up_x:up_x+curr_w].add_(mask)
-    
-    # In-place division
-    output = out.div_(out_div + 1e-8)
-    return output
-
 logger = ColoredLogger("ComfyUI-Upscaler-Tensorrt")
+
+def async_infer(upscaler_trt_model, images_list, cudaStream):
+    upscaled_frames = [None] * len(images_list)
+    next_input_idx = 1
+    
+    # Process first frame synchronously
+    img = images_list[0]
+    result = upscaler_trt_model.infer({"input": img}, cudaStream)
+    upscaled_frames[0] = result["output"].to("cpu")
+    pbar.update(1)
+    
+    # Process remaining frames with overlap
+    for i in range(1, len(images_list)):
+        # Launch inference for current frame asynchronously
+        result = upscaler_trt_model.infer({"input": images_list[next_input_idx]}, cudaStream)
+        
+        # Process previous frame's result while GPU is busy
+        upscaled_frames[i-1] = result["output"].to("cpu")
+        pbar.update(1)
+        
+        next_input_idx += 1
+        
+    # Handle last frame
+    upscaled_frames[-1] = result["output"].to("cpu")
+    pbar.update(1)
+    
+    return upscaled_frames
 
 class UpscalerTensorrt:
     @classmethod
@@ -128,108 +53,66 @@ class UpscalerTensorrt:
     FUNCTION = "upscaler_tensorrt"
     CATEGORY = "tensorrt"
     DESCRIPTION = "Upscale images with tensorrt"
-    OUTPUT_NODE = True
+    OUTPUT_NODE= True
 
     def upscaler_tensorrt(self, images, upscaler_trt_model, resize_to):
         images_bchw = images.permute(0, 3, 1, 2)
         B, C, H, W = images_bchw.shape
         final_width, final_height = get_final_resolutions(W, H, resize_to)
-        pbar = ProgressBar(B)
-        images_list = list(torch.split(images_bchw, split_size_or_sections=1))
         logger.info(f"Upscaling {B} images from H:{H}, W:{W} to H:{H*4}, W:{W*4} | Final resolution: H:{final_height}, W:{final_width} | resize_to: {resize_to}")
 
-        tile_h, tile_w, overlap = 64, 64, 8
-        scale_factor = 4
-        
-        # Process one frame at a time instead of pre-allocating for all frames
-        results = []
-        
-        # setup engine once
-        batch_size = 128
         shape_dict = {
-            "input": {"shape": (batch_size, 3, tile_h, tile_w)},
-            "output": {"shape": (batch_size, 3, tile_h*scale_factor, tile_w*scale_factor)},
+            "input": {"shape": (1, 3, H, W)},
+            "output": {"shape": (1, 3, H*4, W*4)},
         }
+        # setup engine
         upscaler_trt_model.activate()
         upscaler_trt_model.allocate_buffers(shape_dict=shape_dict)
+
         cudaStream = torch.cuda.current_stream().cuda_stream
+        pbar = ProgressBar(B)
+        images_list = list(torch.split(images_bchw, split_size_or_sections=1))
 
-        prev_batch_size, prev_tile_h, prev_tile_w = 0,0,0
+        upscaled_frames = torch.empty((B, C, final_height, final_width), dtype=torch.float32, device=mm.intermediate_device()) # offloaded to cpu
+        must_resize = W*4 != final_width or H*4 != final_height
 
-        for image_idx, img_bchw in enumerate(images_list):
-            tiles, positions = create_tiles(tensor=img_bchw, tile_size=(tile_h,tile_w), overlap=overlap)
-            num_tiles = len(tiles)
+        # Create CUDA events and a separate stream for data transfer
+        events = [torch.cuda.Event(enable_timing=False) for _ in range(B)]
+        transfer_stream = torch.cuda.Stream()
 
-            # Process tiles in batches
-            upscaled_tiles = []
+        for i, img in enumerate(images_list):
+            # Main computation in default stream
+            result = upscaler_trt_model.infer({"input": img}, cudaStream)
+            result = result["output"]
+
+            if must_resize:
+                result = torch.nn.functional.interpolate(
+                    result, 
+                    size=(final_height, final_width),
+                    mode='bicubic',
+                    antialias=True
+                )
             
-            for i in range(0, num_tiles, batch_size):
-                batch_end = min(i + batch_size, num_tiles)
-                current_batch_size = batch_end - i
+            # Record event after computation
+            events[i].record()
 
-                if current_batch_size != prev_batch_size or tile_h != prev_tile_h or tile_w != prev_tile_w:
-                    shape_dict = {
-                        "input": {"shape": (current_batch_size, C, tile_h, tile_w)},
-                        "output": {"shape": (current_batch_size, C, tile_h*scale_factor, tile_w*scale_factor)},
-                    }
-                    upscaler_trt_model.allocate_buffers(shape_dict=shape_dict)
-                    logger.info(f"{image_idx} {i} Allocated memory")
-                    prev_batch_size = current_batch_size
-                    prev_tile_h = tile_h
-                    prev_tile_w = tile_w
+            # Async transfer to CPU in separate stream
+            with torch.cuda.stream(transfer_stream):
+                # Wait for computation to complete
+                events[i].wait()
+                upscaled_frames[i] = result
             
-                batch_input = torch.cat(tiles[i:batch_end], dim=0)
-                start = time.time()
-                result = upscaler_trt_model.infer({"input": batch_input}, cudaStream)
-                end = time.time()
-                # logger.info(f"Engine shape: {batch_input.shape}, Time: {(end-start)*1000} ms")
-                
-                # Store tiles for current batch
-                upscaled_tiles.extend(torch.split(result["output"], 1))
-                
-            # Merge tiles for current frame
-            upscaled_frame = merge_tiles_efficient(
-                tiles=upscaled_tiles,
-                positions=positions,
-                output_shape=(1,3,final_height,final_width),
-                overlap=overlap,
-                upscale_amount=scale_factor,
-                output_device="cuda"
-            )
-            
-            # Move to CPU and store result
-            results.append(upscaled_frame.cpu())
             pbar.update(1)
 
-        # Stack all results at the end
-        output = torch.cat(results, dim=0).permute(0,2,3,1)
+        # Ensure all transfers are complete
+        torch.cuda.current_stream().wait_stream(transfer_stream)
+ 
+        output = upscaled_frames.permute(0, 2, 3, 1)
+        upscaler_trt_model.reset() # frees engine vram
+        mm.soft_empty_cache()
+
         logger.info(f"Output shape: {output.shape}")
         return (output,)
-        # return (images,)
-
-
-
-        # upscaled_frames = torch.empty((B, C, final_height, final_width), dtype=torch.float32, device=mm.intermediate_device()) # offloaded to cpu
-        # must_resize = W*4 != final_width or H*4 != final_height
-
-        # for i, img in enumerate(images_list):
-
-
-        #     if must_resize:
-        #         result = torch.nn.functional.interpolate(
-        #             result, 
-        #             size=(final_height, final_width),
-        #             mode='bicubic',
-        #             antialias=True
-        #         )
-        #     upscaled_frames[i] = result.to(mm.intermediate_device())
-        #     pbar.update(1)
-
-        # output = upscaled_frames.permute(0, 2, 3, 1)
-        # upscaler_trt_model.reset() # frees engine vram
-        # mm.soft_empty_cache()
-
-        # return (output,)
 
 class LoadUpscalerTensorrtModel:
     @classmethod
@@ -258,9 +141,9 @@ class LoadUpscalerTensorrtModel:
         
         # Engine config, should this power be given to people to decide?
         engine_channel = 3
-        engine_min_batch, engine_opt_batch, engine_max_batch = 1, 64, 128
-        engine_min_h, engine_opt_h, engine_max_h = 8, 64, 128
-        engine_min_w, engine_opt_w, engine_max_w = 8, 64, 128
+        engine_min_batch, engine_opt_batch, engine_max_batch = 1, 1, 1
+        engine_min_h, engine_opt_h, engine_max_h = 256, 512, 1280
+        engine_min_w, engine_opt_w, engine_max_w = 256, 512, 1280
         tensorrt_model_path = os.path.join(tensorrt_models_dir, f"{model}_{precision}_{engine_min_batch}x{engine_channel}x{engine_min_h}x{engine_min_w}_{engine_opt_batch}x{engine_channel}x{engine_opt_h}x{engine_opt_w}_{engine_max_batch}x{engine_channel}x{engine_max_h}x{engine_max_w}_{tensorrt.__version__}.trt")
 
         # Download onnx & build tensorrt engine
