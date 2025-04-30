@@ -267,6 +267,13 @@ class Engine:
 
     def __str__(self):
         out = ""
+            
+        # When raising errors in the upscaler, this str() called by comfy's execution.py,
+        # but the engine won't have the attributes required for stringification
+        # If str() also raises an error, comfy gets soft-locked, not running prompts until restarted
+        if not hasattr(self.engine, "num_optimization_profiles") or not hasattr(self.engine, "num_bindings"):
+            return out
+        
         for opt_profile in range(self.engine.num_optimization_profiles):
             for binding_idx in range(self.engine.num_bindings):
                 name = self.engine.get_binding_name(binding_idx)

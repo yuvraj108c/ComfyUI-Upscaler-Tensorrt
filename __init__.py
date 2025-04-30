@@ -11,12 +11,16 @@ import tensorrt
 
 logger = ColoredLogger("ComfyUI-Upscaler-Tensorrt")
 
+IMAGE_DIM_MIN = 256
+IMAGE_DIM_OPT = 512
+IMAGE_DIM_MAX = 1280
+
 class UpscalerTensorrt:
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
-                "images": ("IMAGE", {"tooltip": "Images to be upscaled. Resolution must be between 256 and 1280 px"}),
+                "images": ("IMAGE", {"tooltip": f"Images to be upscaled. Resolution must be between {IMAGE_DIM_MIN} and {IMAGE_DIM_MAX} px"}),
                 "upscaler_trt_model": ("UPSCALER_TRT_MODEL", {"tooltip": "Tensorrt model built and loaded"}),
                 "resize_to": (["none", "HD", "FHD", "2k", "4k"],{"tooltip": "Resize the upscaled image to fixed resolutions, optional"}),
             }
@@ -30,6 +34,12 @@ class UpscalerTensorrt:
     def upscaler_tensorrt(self, images, upscaler_trt_model, resize_to):
         images_bchw = images.permute(0, 3, 1, 2)
         B, C, H, W = images_bchw.shape
+
+        # Raise an error if input image dimensions fall outside of trt engine support
+        for dim in (H, W):
+            if dim > IMAGE_DIM_MAX or dim < IMAGE_DIM_MIN:
+                raise ValueError(f"Input image dimensions fall outside of the supported range: {IMAGE_DIM_MIN} to {IMAGE_DIM_MAX} px!\nImage dimensions: {W}px by {H}px")
+
         final_width, final_height = get_final_resolutions(W, H, resize_to)
         logger.info(f"Upscaling {B} images from H:{H}, W:{W} to H:{H*4}, W:{W*4} | Final resolution: H:{final_height}, W:{final_width} | resize_to: {resize_to}")
 
@@ -97,8 +107,8 @@ class LoadUpscalerTensorrtModel:
         # Engine config, should this power be given to people to decide?
         engine_channel = 3
         engine_min_batch, engine_opt_batch, engine_max_batch = 1, 1, 1
-        engine_min_h, engine_opt_h, engine_max_h = 256, 512, 1280
-        engine_min_w, engine_opt_w, engine_max_w = 256, 512, 1280
+        engine_min_h, engine_opt_h, engine_max_h = IMAGE_DIM_MIN, IMAGE_DIM_OPT, IMAGE_DIM_MAX
+        engine_min_w, engine_opt_w, engine_max_w = IMAGE_DIM_MIN, IMAGE_DIM_OPT, IMAGE_DIM_MAX
         tensorrt_model_path = os.path.join(tensorrt_models_dir, f"{model}_{precision}_{engine_min_batch}x{engine_channel}x{engine_min_h}x{engine_min_w}_{engine_opt_batch}x{engine_channel}x{engine_opt_h}x{engine_opt_w}_{engine_max_batch}x{engine_channel}x{engine_max_h}x{engine_max_w}_{tensorrt.__version__}.trt")
 
         # Download onnx & build tensorrt engine
@@ -119,7 +129,7 @@ class LoadUpscalerTensorrtModel:
                 onnx_path=onnx_model_path,
                 fp16= True if precision == "fp16" else False, # mixed precision not working TODO: investigate
                 input_profile=[
-                    {"input": [(engine_min_batch,engine_channel,engine_min_h,engine_min_w), (engine_opt_batch,engine_channel,engine_opt_h,engine_min_w), (engine_max_batch,engine_channel,engine_max_h,engine_max_w)]}, # any sizes from 256x256 to 1280x1280
+                    {"input": [(engine_min_batch,engine_channel,engine_min_h,engine_min_w), (engine_opt_batch,engine_channel,engine_opt_h,engine_min_w), (engine_max_batch,engine_channel,engine_max_h,engine_max_w)]}, # any sizes from IMAGE_DIM_MIN to IMAGE_DIM_MAX, i.e. 256x256 to 1280x1280 by default
                 ],
             )
             e = time.time()
