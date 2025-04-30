@@ -3,25 +3,34 @@
 # ComfyUI Upscaler TensorRT ⚡
 
 [![python](https://img.shields.io/badge/python-3.10.12-green)](https://www.python.org/downloads/release/python-31012/)
-[![cuda](https://img.shields.io/badge/cuda-12.6-green)](https://developer.nvidia.com/cuda-downloads)
-[![trt](https://img.shields.io/badge/TRT-10.8-green)](https://developer.nvidia.com/tensorrt)
+[![cuda](https://img.shields.io/badge/cuda-12.7-green)](https://developer.nvidia.com/cuda-downloads)
+[![trt](https://img.shields.io/badge/TRT-10.9-green)](https://developer.nvidia.com/tensorrt)
 [![by-nc-sa/4.0](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en)
 
 </div>
 
-<p align="center">
-  <img src="assets/node_v3.png" />
+This project provides a [Tensorrt](https://github.com/NVIDIA/TensorRT) implementation for fast image upscaling using models inside ComfyUI (2-4x faster)
 
+<p align="center">
+  <img src="assets/node_v3.png" style="height: 400px" />
 </p>
 
-This project provides a [Tensorrt](https://github.com/NVIDIA/TensorRT) implementation for fast image upscaling inside ComfyUI (2-4x faster)
+## ⭐ Support
+If you like my projects and wish to see updates and new features, please consider supporting me. It helps a lot! 
 
-This project is licensed under [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/), everyone is FREE to access, use, modify and redistribute with the same license.
+[![ComfyUI-Depth-Anything-Tensorrt](https://img.shields.io/badge/ComfyUI--Depth--Anything--Tensorrt-blue?style=flat-square)](https://github.com/yuvraj108c/ComfyUI-Depth-Anything-Tensorrt)
+[![ComfyUI-Upscaler-Tensorrt](https://img.shields.io/badge/ComfyUI--Upscaler--Tensorrt-blue?style=flat-square)](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt)
+[![ComfyUI-Dwpose-Tensorrt](https://img.shields.io/badge/ComfyUI--Dwpose--Tensorrt-blue?style=flat-square)](https://github.com/yuvraj108c/ComfyUI-Dwpose-Tensorrt)
+[![ComfyUI-Rife-Tensorrt](https://img.shields.io/badge/ComfyUI--Rife--Tensorrt-blue?style=flat-square)](https://github.com/yuvraj108c/ComfyUI-Rife-Tensorrt)
 
-For commercial purposes, please contact me directly at yuvraj108c@gmail.com
+[![ComfyUI-Whisper](https://img.shields.io/badge/ComfyUI--Whisper-gray?style=flat-square)](https://github.com/yuvraj108c/ComfyUI-Whisper)
+[![ComfyUI_InvSR](https://img.shields.io/badge/ComfyUI__InvSR-gray?style=flat-square)](https://github.com/yuvraj108c/ComfyUI_InvSR)
+[![ComfyUI-Thera](https://img.shields.io/badge/ComfyUI--Thera-gray?style=flat-square)](https://github.com/yuvraj108c/ComfyUI-Thera)
+[![ComfyUI-Video-Depth-Anything](https://img.shields.io/badge/ComfyUI--Video--Depth--Anything-gray?style=flat-square)](https://github.com/yuvraj108c/ComfyUI-Video-Depth-Anything)
+[![ComfyUI-PiperTTS](https://img.shields.io/badge/ComfyUI--PiperTTS-gray?style=flat-square)](https://github.com/yuvraj108c/ComfyUI-PiperTTS)
 
-If you like the project, please give me a star! ⭐
-
+[![buy-me-coffees](https://i.imgur.com/3MDbAtw.png)](https://www.buymeacoffee.com/yuvraj108cZ)
+[![paypal-donation](https://i.imgur.com/w5jjubk.png)](https://paypal.me/yuvraj108c)
 ---
 
 ## ⏱️ Performance
@@ -77,6 +86,8 @@ pip install -r requirements.txt
 - If you've tested another working tensorrt model, let me know to add it officially to this node
 
 ## 🚨 Updates
+### 30 April 2025
+- Merge https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/48 by @BiiirdPrograms to fix soft-lock by raising an error when input image dimensions unsupported
 ### 4 March 2025 (breaking)
 - Automatic tensorrt engines are built from the workflow itself, to simplify the process for non-technical people
 - Separate model loading and tensorrt processing into different nodes
