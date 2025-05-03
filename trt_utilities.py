@@ -156,6 +156,7 @@ class Engine:
         del self.tensors
         # self.engine_path = engine_path
 
+        self.context = None
         self.buffers = OrderedDict()
         self.tensors = OrderedDict()
         self.inputs = {}
