@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-upscaler-tensorrt"
+description = "This project provides a Tensorrt implementation for fast image upscaling inside ComfyUI (3-4x faster)"
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["tensorrt", "polygraphy"]
+
+[project.urls]
+Repository = "https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-Upscaler-Tensorrt"
+Icon = ""
