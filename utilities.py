@@ -121,11 +121,17 @@ def get_final_resolutions(width, height, resize_to):
         case "none":
             final_width = width*4
             final_height = height*4
+        case "2x":
+            final_width = width*2
+            final_height = height*2
+        case "3x":
+            final_width = width*3
+            final_height = height*3
 
     if aspect_ratio == 1.0:
         final_width = final_height
 
-    if aspect_ratio < 1.0 and resize_to != "none":
+    if aspect_ratio < 1.0 and resize_to not in ("none", "2x", "3x"):
         temp = final_width
         final_width = final_height
         final_height = temp

@@ -61,7 +61,7 @@ class UpscalerTensorrt:
             "required": {
                 "images": ("IMAGE", {"tooltip": f"Images to be upscaled. Resolution must be between {IMAGE_DIM_MIN} and {IMAGE_DIM_MAX} px"}),
                 "upscaler_trt_model": ("UPSCALER_TRT_MODEL", {"tooltip": "Tensorrt model built and loaded"}),
-                "resize_to": (["none", "HD", "FHD", "2k", "4k"],{"tooltip": "Resize the upscaled image to fixed resolutions, optional"}),
+                "resize_to": (["none", "HD", "FHD", "2k", "4k", "2x", "3x"],{"tooltip": "Resize the upscaled image to fixed resolutions, optional"}),
             }
         }
     RETURN_NAMES = ("IMAGE",)
