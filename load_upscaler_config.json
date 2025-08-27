@@ -1,0 +1,24 @@
+{
+  "model": {
+    "options": [
+      "4x-AnimeSharp",
+      "4x-UltraSharp",
+      "4x-WTP-UDS-Esrgan",
+      "4x_NMKD-Siax_200k",
+      "4x_RealisticRescaler_100000_G",
+      "4x_foolhardy_Remacri",
+      "RealESRGAN_x4",
+      "4xNomos2_otf_esrgan",
+      "4x-ClearRealityV1",
+      "4x-UltraSharpV2_Lite_fp16_op17",
+      "4x-UltraSharpV2_Lite_fp32_op17"
+    ],
+    "default": "4x-UltraSharp",
+    "tooltip": "These models have been tested with tensorrt. Loaded from config."
+  },
+  "precision": {
+    "options": ["fp16", "fp32"],
+    "default": "fp16",
+    "tooltip": "Precision to build the tensorrt engines. Loaded from config."
+  }
+}
