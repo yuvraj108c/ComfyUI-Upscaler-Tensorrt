@@ -72,7 +72,7 @@ pip install -r requirements.txt
    - [4x-ClearRealityV1](https://openmodeldb.info/models/4x-ClearRealityV1)
    - [4x_UniversalUpscalerV2-Neutral_115000_swaG](https://openmodeldb.info/models/4x-UniversalUpscalerV2-Neutral)
    - [4x-UltraSharpV2_Lite](https://huggingface.co/Kim2091/UltraSharpV2) 
-   - [4x-UltraSharpV2](https://huggingface.co/Kim2091/UltraSharpV2) (⚠️ Need more than 24GB VRAM, Not working currently)
+   - [4x-UltraSharpV2](https://huggingface.co/Kim2091/UltraSharpV2) (⚠️ Not working currently)
 
 ## ☀️ Usage
 
@@ -91,7 +91,7 @@ pip install -r requirements.txt
 
 ## 🚨 Updates
 ### 27 Auguest 2025
-- Support 4x-UltraSharpV2_Lite, 4x-UltraSharpV2, 4x_UniversalUpscalerV2-Neutral_115000_swaG, 4x-ClearRealityV1
+- Support 4x-UltraSharpV2_Lite, 4x_UniversalUpscalerV2-Neutral_115000_swaG, 4x-ClearRealityV1
 - Load models from config [PR#57](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/57)
 
 ### 30 April 2025
