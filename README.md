@@ -69,6 +69,8 @@ pip install -r requirements.txt
    - [4x_foolhardy_Remacri](https://openmodeldb.info/models/4x-Remacri)
    - [RealESRGAN_x4](https://openmodeldb.info/models/4x-realesrgan-x4plus)
    - [4xNomos2_otf_esrgan](https://openmodeldb.info/models/4x-Nomos2-otf-esrgan)
+   - [4x-ClearRealityV1](https://openmodeldb.info/models/4x-ClearRealityV1)
+   - [4x_UniversalUpscalerV2-Neutral_115000_swaG](https://openmodeldb.info/models/4x-UniversalUpscalerV2-Neutral)
 
 ## ☀️ Usage
 
