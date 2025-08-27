@@ -84,7 +84,7 @@ class LoadUpscalerTensorrtModel:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "model": (["4x-AnimeSharp", "4x-UltraSharp", "4x-WTP-UDS-Esrgan", "4x_NMKD-Siax_200k", "4x_RealisticRescaler_100000_G", "4x_foolhardy_Remacri", "RealESRGAN_x4", "4xNomos2_otf_esrgan"], {"default": "4x-UltraSharp", "tooltip": "These models have been tested with tensorrt"}),
+                "model": (["4x-AnimeSharp", "4x-UltraSharp", "4x-WTP-UDS-Esrgan", "4x_NMKD-Siax_200k", "4x_RealisticRescaler_100000_G", "4x_foolhardy_Remacri", "RealESRGAN_x4", "4xNomos2_otf_esrgan", "4x_UniversalUpscalerV2-Neutral_115000_swaG", "1x-ITF-SkinDiffDetail-Lite-v1"], {"default": "4x-UltraSharp", "tooltip": "These models have been tested with tensorrt"}),
                 "precision": (["fp16", "fp32"], {"default": "fp16", "tooltip": "Precision to build the tensorrt engines"}),
             }
         }
