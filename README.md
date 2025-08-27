@@ -71,8 +71,8 @@ pip install -r requirements.txt
    - [4xNomos2_otf_esrgan](https://openmodeldb.info/models/4x-Nomos2-otf-esrgan)
    - [4x-ClearRealityV1](https://openmodeldb.info/models/4x-ClearRealityV1)
    - [4x_UniversalUpscalerV2-Neutral_115000_swaG](https://openmodeldb.info/models/4x-UniversalUpscalerV2-Neutral)
-   - [4x-UltraSharpV2_Lite](https://huggingface.co/Kim2091/UltraSharpV2)
-   - [4x-UltraSharpV2](https://huggingface.co/Kim2091/UltraSharpV2)
+   - [4x-UltraSharpV2_Lite](https://huggingface.co/Kim2091/UltraSharpV2) 
+   - [4x-UltraSharpV2](https://huggingface.co/Kim2091/UltraSharpV2) (Need more than 24GB VRAM)
 
 ## ☀️ Usage
 
@@ -85,11 +85,15 @@ pip install -r requirements.txt
 ## 🔧 Custom Models
 - To export other ESRGAN models, you'll have to build the onnx model first, using [export_onnx.py](scripts/export_onnx.py) 
 - Place the onnx model in `/ComfyUI/models/onnx/YOUR_MODEL.onnx`
-- Then, add your model to this list as shown: https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/blob/8f7ef5d1f713af3b4a74a64fa13a65ee5c404cd4/__init__.py#L77
+- Then, add your model to this list [load_upscaler_config.json](load_upscaler_config.json)
 - Finally, run the same workflow and choose your model
 - If you've tested another working tensorrt model, let me know to add it officially to this node
 
 ## 🚨 Updates
+### 27 Auguest 2025
+- Support 4x-UltraSharpV2_Lite, 4x-UltraSharpV2, 4x_UniversalUpscalerV2-Neutral_115000_swaG, 4x-ClearRealityV1
+- Load models from config [PR#57](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/57)
+
 ### 30 April 2025
 - Merge https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/48 by @BiiirdPrograms to fix soft-lock by raising an error when input image dimensions unsupported
 ### 4 March 2025 (breaking)
