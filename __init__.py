@@ -24,7 +24,7 @@ def get_scale_factor_from_model_name(model_name: str) -> int:
     elif "1x" in lower_name or "x1" in lower_name:
         return 1
     else:
-        return 1  # Default
+        return 4  # Default
 
 # --- Function to load configuration ---
 def load_node_config(config_filename="load_upscaler_config.json"):
