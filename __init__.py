@@ -16,6 +16,16 @@ IMAGE_DIM_MIN = 256
 IMAGE_DIM_OPT = 512
 IMAGE_DIM_MAX = 1280
 
+# --- Function to determine scaling factor from model name ---
+def get_scale_factor_from_model_name(model_name: str) -> int:
+    lower_name = model_name.lower()
+    if "4x" in lower_name or "x4" in lower_name:
+        return 4
+    elif "1x" in lower_name or "x1" in lower_name:
+        return 1
+    else:
+        return 1  # Default
+
 # --- Function to load configuration ---
 def load_node_config(config_filename="load_upscaler_config.json"):
     """Loads node configuration from a JSON file."""
@@ -79,11 +89,19 @@ class UpscalerTensorrt:
                 raise ValueError(f"Input image dimensions fall outside of the supported range: {IMAGE_DIM_MIN} to {IMAGE_DIM_MAX} px!\nImage dimensions: {W}px by {H}px")
 
         final_width, final_height = get_final_resolutions(W, H, resize_to)
-        logger.info(f"Upscaling {B} images from H:{H}, W:{W} to H:{H*4}, W:{W*4} | Final resolution: H:{final_height}, W:{final_width} | resize_to: {resize_to}")
+
+        # --- Determination of the scaling factor ---
+        try:
+            scale_factor = get_scale_factor_from_model_name(upscaler_trt_model.model_name)
+        except AttributeError:
+            logger.warning("Attribute ‘model_name’ not found. Default 4x used.")
+            scale_factor = 4
+
+        logger.info(f"Upscaling {B} images from H:{H}, W:{W} to H:{H*scale_factor}, W:{W*scale_factor} | Final resolution: H:{final_height}, W:{final_width} | resize_to: {resize_to}")
 
         shape_dict = {
             "input": {"shape": (1, 3, H, W)},
-            "output": {"shape": (1, 3, H*4, W*4)},
+            "output": {"shape": (1, 3, H*scale_factor, W*scale_factor)},
         }
         upscaler_trt_model.activate()
         upscaler_trt_model.allocate_buffers(shape_dict=shape_dict)
@@ -93,7 +111,7 @@ class UpscalerTensorrt:
         images_list = list(torch.split(images_bchw, split_size_or_sections=1))
 
         upscaled_frames = torch.empty((B, C, final_height, final_width), dtype=torch.float32, device=mm.intermediate_device())
-        must_resize = W*4 != final_width or H*4 != final_height
+        must_resize = W*scale_factor != final_width or H*scale_factor != final_height
 
         for i, img in enumerate(images_list):
             result = upscaler_trt_model.infer({"input": img}, cudaStream)
@@ -187,6 +205,9 @@ class LoadUpscalerTensorrtModel:
         mm.soft_empty_cache()
         engine = Engine(tensorrt_model_path)
         engine.load()
+
+        # --- Save model name for later access ---
+        engine.model_name = model
 
         return (engine,)
 
