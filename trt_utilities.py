@@ -194,14 +194,22 @@ class Engine:
         if not enable_all_tactics:
             config_kwargs["tactic_sources"] = []
 
-        network = network_from_onnx_path(
-            onnx_path, flags=[trt.OnnxParserFlag.NATIVE_INSTANCENORM]
-        )
-        if update_output_names:
-            print(f"Updating network outputs to {update_output_names}")
-            network = ModifyNetworkOutputs(network, update_output_names)
+        if TENSORRT_RTX_AVAILABLE:
+            builder = trt.Builder(TRT_LOGGER)
+            network = builder.create_network(0)
+            parser = trt.OnnxParser(network, TRT_LOGGER)
+            success = parser.parse_from_file(onnx_path)
+            if not success:
+                raise RuntimeError(f"Failed to parse the ONNX file: {onnx_path}")
+        else:
+            network = network_from_onnx_path(
+                onnx_path, flags=[trt.OnnxParserFlag.NATIVE_INSTANCENORM]
+            )
+            if update_output_names:
+                print(f"Updating network outputs to {update_output_names}")
+                network = ModifyNetworkOutputs(network, update_output_names)
+            builder = network[0]
 
-        builder = network[0]
         config = builder.create_builder_config()
         config.progress_monitor = TQDMProgressMonitor()
 
@@ -212,28 +220,42 @@ class Engine:
         profiles = copy.deepcopy(p)
         for profile in profiles:
             # Last profile is used for set_calibration_profile.
-            calib_profile = profile.fill_defaults(network[1]).to_trt(
-                builder, network[1]
+            calib_profile = profile.fill_defaults(network[1] if not TENSORRT_RTX_AVAILABLE else network).to_trt(
+                builder, network[1] if not TENSORRT_RTX_AVAILABLE else network
             )
             config.add_optimization_profile(calib_profile)
 
         try:
-            engine = engine_from_network(
-                network,
-                config,
-            )
+            if TENSORRT_RTX_AVAILABLE:
+                engine = builder.build_serialized_network(network, config)
+            else:
+                engine = engine_from_network(
+                    network,
+                    config,
+                )
         except Exception as e:
             error(f"Failed to build engine: {e}")
             return 1
         try:
-            save_engine(engine, path=self.engine_path)
+            if TENSORRT_RTX_AVAILABLE:
+                with open(self.engine_path, "wb") as f:
+                    f.write(engine)
+            else:
+                save_engine(engine, path=self.engine_path)
         except Exception as e:
             error(f"Failed to save engine: {e}")
             return 1
         return 0
 
     def load(self):
-        self.engine = engine_from_bytes(bytes_from_path(self.engine_path))
+        if TENSORRT_RTX_AVAILABLE:
+            runtime = trt.Runtime(TRT_LOGGER)
+            with open(self.engine_path, "rb") as f:
+                engine_bytes = f.read()
+            buffer = memoryview(engine_bytes)
+            self.engine = runtime.deserialize_cuda_engine(buffer)
+        else:
+            self.engine = engine_from_bytes(bytes_from_path(self.engine_path))
 
     def activate(self, reuse_device_memory=None):
         if reuse_device_memory:
