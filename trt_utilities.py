@@ -31,9 +31,11 @@ from polygraphy.backend.trt import (
 from polygraphy.logger import G_LOGGER
 
 # Support TensorRT-RTX
+TENSORRT_RTX_AVAILABLE = False
 import importlib
 if importlib.util.find_spec('tensorrt_rtx') is not None:
     import tensorrt_rtx as trt
+    TENSORRT_RTX_AVAILABLE = True
 else:
     import tensorrt as trt
 
@@ -203,7 +205,8 @@ class Engine:
         config = builder.create_builder_config()
         config.progress_monitor = TQDMProgressMonitor()
 
-        config.set_flag(trt.BuilderFlag.FP16) if fp16 else None
+        # TensorRT-RTX only allows strongly typed networks, so precision is dependent on the model
+        config.set_flag(trt.BuilderFlag.FP16) if fp16 and not TENSORRT_RTX_AVAILABLE else None
         config.set_flag(trt.BuilderFlag.REFIT) if enable_refit else None
 
         profiles = copy.deepcopy(p)
