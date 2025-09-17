@@ -29,7 +29,14 @@ from polygraphy.backend.trt import (
     save_engine,
 )
 from polygraphy.logger import G_LOGGER
-import tensorrt as trt
+
+# Support TensorRT-RTX
+import importlib
+if importlib.util.find_spec('tensorrt_rtx') is not None:
+    import tensorrt_rtx as trt
+else:
+    import tensorrt as trt
+
 from logging import error, warning
 from tqdm import tqdm
 import copy
