@@ -1,3 +1,5 @@
-tensorrt<=10.12.0.36
+--extra-index-url https://pypi.nvidia.com
+tensorrt-cu12>=10.12
 polygraphy
+onnx-graphsurgeon
 requests
