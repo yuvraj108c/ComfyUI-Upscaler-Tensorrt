@@ -1,3 +1,3 @@
-tensorrt<=10.12.0.36
+tensorrt
 polygraphy
 requests
