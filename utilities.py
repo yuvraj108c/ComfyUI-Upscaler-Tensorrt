@@ -121,19 +121,18 @@ def get_final_resolutions(width, height, resize_to):
         case "none":
             final_width = width*4
             final_height = height*4
-        case "2x":
-            final_width = width*2
-            final_height = height*2
-        case "3x":
-            final_width = width*3
-            final_height = height*3
+
+        case _:
+            resize_factor = float(resize_to.split('x')[0])
+            final_width = width*resize_factor
+            final_height = height*resize_factor
 
     if aspect_ratio == 1.0:
         final_width = final_height
 
-    if aspect_ratio < 1.0 and resize_to not in ("none", "2x", "3x"):
+    if aspect_ratio < 1.0 and resize_to not in ("none", "1x", "1.5x", "2x", "2.5x", "3x", "3.5x", "4x", "5x", "6x", "7x", "8x", "9x", "10x"):
         temp = final_width
         final_width = final_height
         final_height = temp
 
-    return (final_width, final_height)
+    return (int(final_width), int(final_height)) # must be whole numbers
