@@ -91,11 +91,11 @@ pip install -r requirements.txt
 - If you've tested another working tensorrt model, let me know to add it officially to this node
 
 ## 🚨 Updates
-### 27 Auguest 2025
+### 12 January 2026
 - Add more resizing scale factors
 - Add custom resolution resizing
 
-### 27 Auguest 2025
+### 27 August 2025
 - Support 4x-UltraSharpV2_Lite, 4x_UniversalUpscalerV2-Neutral_115000_swaG, 4x-ClearRealityV1
 - Load models from config [PR#57](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/57)
 
