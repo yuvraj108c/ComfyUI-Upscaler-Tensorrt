@@ -1,6 +1,6 @@
 import torch
 import time
-from utilities import Engine
+from trt_utilities import Engine
 
 def export_trt(trt_path=None, onnx_path=None, use_fp16=True):
     if trt_path is None:
