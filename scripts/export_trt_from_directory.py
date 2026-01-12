@@ -1,7 +1,7 @@
 import os
 import torch
 import time
-from utilities import Engine
+from trt_utilities import Engine
 
 def export_trt(trt_path=None, onnx_path=None, use_fp16=True):
     option = input("Choose an option:\n1. Convert a single ONNX file\n2. Convert all ONNX files in a directory\nEnter your choice (1 or 2): ")
@@ -60,3 +60,4 @@ def export_trt(trt_path=None, onnx_path=None, use_fp16=True):
     return
 
 export_trt()
+
