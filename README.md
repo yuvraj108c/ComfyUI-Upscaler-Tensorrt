@@ -2,14 +2,16 @@
 
 # ComfyUI Upscaler TensorRT ⚡
 
-[![python](https://img.shields.io/badge/python-3.10.12-green)](https://www.python.org/downloads/release/python-31012/)
-[![cuda](https://img.shields.io/badge/cuda-12.7-green)](https://developer.nvidia.com/cuda-downloads)
-[![trt](https://img.shields.io/badge/TRT-10.9-green)](https://developer.nvidia.com/tensorrt)
+[![python](https://img.shields.io/badge/python-3.12.3-green)](https://www.python.org/downloads/release/python-3123//)
+[![cuda](https://img.shields.io/badge/cuda-13.1-green)](https://developer.nvidia.com/cuda-downloads)
+[![trt](https://img.shields.io/badge/TRT-10.14.1.48-green)](https://developer.nvidia.com/tensorrt)
 [![by-nc-sa/4.0](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en)
 
 </div>
 
 This project provides a [Tensorrt](https://github.com/NVIDIA/TensorRT) implementation for fast image upscaling using models inside ComfyUI (2-4x faster)
+
+**Last tested**: 12 January 2026 (ComfyUI v0.8.2@c623804 | Torch 2.9.1 | Tensorrt 10.14.1.48 | Python 3.12.3 | RTX5090 | CUDA 13.1 | Ubuntu 24.04)
 
 <p align="center">
   <img src="assets/node_v3.png" style="height: 400px" />
@@ -79,7 +81,7 @@ pip install -r requirements.txt
 - Choose the appropriate model from the dropdown
 - The tensorrt engine will be built automatically
 - Load an image of resolution between 256-1280px
-- Set `resize_to` to resize the upscaled images to fixed resolutions
+- Set `resize_to` to resize the upscaled images to fixed or custom resolutions
 
 ## 🔧 Custom Models
 - To export other ESRGAN models, you'll have to build the onnx model first, using [export_onnx.py](scripts/export_onnx.py) 
@@ -89,6 +91,10 @@ pip install -r requirements.txt
 - If you've tested another working tensorrt model, let me know to add it officially to this node
 
 ## 🚨 Updates
+### 27 Auguest 2025
+- Add more resizing scale factors
+- Add custom resolution resizing
+
 ### 27 Auguest 2025
 - Support 4x-UltraSharpV2_Lite, 4x_UniversalUpscalerV2-Neutral_115000_swaG, 4x-ClearRealityV1
 - Load models from config [PR#57](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/57)
