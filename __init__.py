@@ -61,7 +61,9 @@ class UpscalerTensorrt:
             "required": {
                 "images": ("IMAGE", {"tooltip": f"Images to be upscaled. Resolution must be between {IMAGE_DIM_MIN} and {IMAGE_DIM_MAX} px"}),
                 "upscaler_trt_model": ("UPSCALER_TRT_MODEL", {"tooltip": "Tensorrt model built and loaded"}),
-                "resize_to": (["none", "HD", "FHD", "2k", "4k", "1x", "1.5x", "2x", "2.5x", "3x", "3.5x", "4x", "5x", "6x", "7x", "8x", "9x", "10x"], {"tooltip": "Resize the upscaled image to fixed resolutions, optional"}),
+                "resize_to": (["none", "custom", "HD", "FHD", "2k", "4k", "1x", "1.5x", "2x", "2.5x", "3x", "3.5x", "4x", "5x", "6x", "7x", "8x", "9x", "10x"], {"tooltip": "Resize the upscaled image to fixed resolutions, optional"}),
+                "resize_width": ("INT", {"default": 1024, "min": 1, "max": 8192}),
+                "resize_height": ("INT", {"default": 1024, "min": 1, "max": 8192}),
             }
         }
     RETURN_NAMES = ("IMAGE",)
@@ -70,7 +72,11 @@ class UpscalerTensorrt:
     CATEGORY = "tensorrt"
     DESCRIPTION = "Upscale images with tensorrt"
 
-    def upscaler_tensorrt(self, images, upscaler_trt_model, resize_to):
+    def upscaler_tensorrt(self, **kwargs):
+        images = kwargs.get("images")
+        upscaler_trt_model = kwargs.get("upscaler_trt_model")
+        resize_to = kwargs.get("resize_to")
+
         images_bchw = images.permute(0, 3, 1, 2)
         B, C, H, W = images_bchw.shape
 
@@ -78,7 +84,12 @@ class UpscalerTensorrt:
             if dim > IMAGE_DIM_MAX or dim < IMAGE_DIM_MIN:
                 raise ValueError(f"Input image dimensions fall outside of the supported range: {IMAGE_DIM_MIN} to {IMAGE_DIM_MAX} px!\nImage dimensions: {W}px by {H}px")
 
-        final_width, final_height = get_final_resolutions(W, H, resize_to)
+        if resize_to == "custom":
+            final_width = kwargs.get("resize_width")
+            final_height = kwargs.get("resize_height")
+        else:
+            final_width, final_height = get_final_resolutions(W, H, resize_to)
+
         logger.info(f"Upscaling {B} images from H:{H}, W:{W} to H:{H*4}, W:{W*4} | Final resolution: H:{final_height}, W:{final_width} | resize_to: {resize_to}")
 
         shape_dict = {
@@ -200,4 +211,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LoadUpscalerTensorrtModel": "Load Upscale Tensorrt Model",
 }
 
-__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
+WEB_DIRECTORY = "./js"
+
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', "WEB_DIRECTORY"]
