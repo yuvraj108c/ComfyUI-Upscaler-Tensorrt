@@ -7,8 +7,16 @@ from .trt_utilities import Engine
 from .utilities import download_file, ColoredLogger, get_final_resolutions
 import comfy.model_management as mm
 import time
-import tensorrt
 import json # <--- Import json module
+
+# Support TensorRT-RTX
+TENSORRT_RTX_AVAILABLE = False
+import importlib
+if importlib.util.find_spec('tensorrt_rtx') is not None:
+    import tensorrt_rtx as tensorrt
+    TENSORRT_RTX_AVAILABLE = True
+else:
+    import tensorrt
 
 logger = ColoredLogger("ComfyUI-Upscaler-Tensorrt")
 
@@ -170,7 +178,7 @@ class LoadUpscalerTensorrtModel:
         engine_min_batch, engine_opt_batch, engine_max_batch = 1, 1, 1
         engine_min_h, engine_opt_h, engine_max_h = IMAGE_DIM_MIN, IMAGE_DIM_OPT, IMAGE_DIM_MAX
         engine_min_w, engine_opt_w, engine_max_w = IMAGE_DIM_MIN, IMAGE_DIM_OPT, IMAGE_DIM_MAX
-        tensorrt_model_path = os.path.join(tensorrt_models_dir, f"{model}_{precision}_{engine_min_batch}x{engine_channel}x{engine_min_h}x{engine_min_w}_{engine_opt_batch}x{engine_channel}x{engine_opt_h}x{engine_opt_w}_{engine_max_batch}x{engine_channel}x{engine_max_h}x{engine_max_w}_{tensorrt.__version__}.trt")
+        tensorrt_model_path = os.path.join(tensorrt_models_dir, f"{model}_{precision if not TENSORRT_RTX_AVAILABLE else 'rtx'}_{engine_min_batch}x{engine_channel}x{engine_min_h}x{engine_min_w}_{engine_opt_batch}x{engine_channel}x{engine_opt_h}x{engine_opt_w}_{engine_max_batch}x{engine_channel}x{engine_max_h}x{engine_max_w}_{tensorrt.__version__}.trt")
 
         if not os.path.exists(tensorrt_model_path):
             if not os.path.exists(onnx_model_path):
@@ -186,7 +194,7 @@ class LoadUpscalerTensorrtModel:
             engine = Engine(tensorrt_model_path)
             engine.build(
                 onnx_path=onnx_model_path,
-                fp16= True if precision == "fp16" else False,
+                fp16= True if precision == "fp16" and not TENSORRT_RTX_AVAILABLE else False,
                 input_profile=[
                     {"input": [(engine_min_batch,engine_channel,engine_min_h,engine_min_w), (engine_opt_batch,engine_channel,engine_opt_h,engine_min_w), (engine_max_batch,engine_channel,engine_max_h,engine_max_w)]},
                 ],
