@@ -100,7 +100,7 @@ def download_file(url, save_path):
             size = file.write(data)
             progress_bar.update(size)
 
-def get_final_resolutions(width, height, resize_to):
+def get_final_resolutions(width, height, resize_to, scale=4):
     final_width = None
     final_height = None
     aspect_ratio = float(width/height)
@@ -119,8 +119,8 @@ def get_final_resolutions(width, height, resize_to):
             final_width = 3840
             final_height = 2160
         case "none":
-            final_width = width*4
-            final_height = height*4
+            final_width = width*scale
+            final_height = height*scale
 
         case _:
             resize_factor = float(resize_to.split('x')[0])
