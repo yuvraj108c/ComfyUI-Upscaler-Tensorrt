@@ -167,5 +167,7 @@ def load_node_config(config_filename="load_upscaler_config.json"):
 LOAD_UPSCALER_NODE_CONFIG = load_node_config()
 
 def get_model_scale(model_name):
-    LOAD_UPSCALER_NODE_CONFIG = load_node_config()
-    return LOAD_UPSCALER_NODE_CONFIG.get("models", {}).get(model_name, {}).get("scale", 4)
+    for m in LOAD_UPSCALER_NODE_CONFIG.get("models", []):
+        if m["name"] == model_name:
+            return m["scale"]
+    return 4

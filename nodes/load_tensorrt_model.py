@@ -25,7 +25,7 @@ class LoadUpscalerTensorrtModel:
         model_config = LOAD_UPSCALER_NODE_CONFIG.get("models", {})
         precision_config = LOAD_UPSCALER_NODE_CONFIG.get("precision", {})
 
-        model_options = list(model_config.keys())
+        model_options = [m["name"] for m in model_config]
         model_default = model_options[0] if model_options else "4x-UltraSharp"
 
         precision_options = precision_config.get("options", ["fp16", "fp32"])
@@ -84,5 +84,6 @@ class LoadUpscalerTensorrtModel:
             mm.soft_empty_cache()
             engine = Engine(tensorrt_model_path)
             engine.load()
+            engine.model_name = model
 
             return (engine,)

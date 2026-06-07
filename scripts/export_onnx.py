@@ -1,18 +1,22 @@
+# place this file inside comfyui root directory
 # download the upscale models & place inside models/upscaler_models
+# pip install onnx onnxscript
 # edit model paths accordingly 
+# set model scale accordingly
 
 import torch
 import folder_paths
 from spandrel import ModelLoader, ImageModelDescriptor
 
-model_name = "4xNomos2_otf_esrgan.pth"
-onnx_save_path = "./4xNomos2_otf_esrgan.onnx"
+model_name = "2x-ESRGAN.pth"
+onnx_save_path = "./2x-ESRGAN.onnx"
+model_scale = 2 # change to 1/2/4 accordingly
 
 model_path = folder_paths.get_full_path_or_raise("upscale_models", model_name)
 model = ModelLoader().load_from_file(model_path).model.eval().cuda()
 
 # Check dynamic shapes for esrgan 4x model
-def supports_dynamic_shapes_esrgan(model, scale=4):
+def supports_dynamic_shapes_esrgan(model, scale=model_scale):
 
     input_shapes = [
     (1, 3, 64, 64),
@@ -74,6 +78,7 @@ with torch.no_grad():
         opset_version=17,
         export_params=True,
         dynamic_axes=dynamic_axes,
+        dynamo=False
     )
 
 print("Saved onnx to:", onnx_save_path)

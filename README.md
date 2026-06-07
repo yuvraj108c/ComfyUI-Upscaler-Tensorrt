@@ -80,6 +80,8 @@ pip install tensorrt-rtx
    - [4x-ClearRealityV1](https://openmodeldb.info/models/4x-ClearRealityV1)
    - [4x_UniversalUpscalerV2-Neutral_115000_swaG](https://openmodeldb.info/models/4x-UniversalUpscalerV2-Neutral)
    - [4x-UltraSharpV2_Lite](https://huggingface.co/Kim2091/UltraSharpV2) 
+   - [2x-ESRGAN](https://openmodeldb.info/models/2x-ESRGAN) 
+   - [1x-ITF-SkinDiffDetail-Lite-v1](https://openmodeldb.info/models/1x-ITF-SkinDiffDetail-Lite-v1) 
 
 ## ☀️ Usage
 
@@ -99,6 +101,7 @@ pip install tensorrt-rtx
 ## 🚨 Updates
 ### 07 June 2026
 - Add support for [TensorRT-RTX](https://github.com/NVIDIA/TensorRT-RTX) ([PR#82](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/82) by [@tangalbert919](https://github.com/tangalbert919))
+- Add support for 1x/2x/any-x models
   
 ### 12 January 2026
 - Add more resizing scale factors

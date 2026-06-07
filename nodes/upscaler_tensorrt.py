@@ -39,8 +39,6 @@ class UpscalerTensorrt:
         resize_to = kwargs.get("resize_to")
 
         model_name = getattr(upscaler_trt_model, "model_name", None)
-        if model_name is None:
-            model_name = "4x-UltraSharp"
 
         scale = get_model_scale(model_name)
 
@@ -85,6 +83,7 @@ class UpscalerTensorrt:
 
         for i, img in enumerate(images_list):
             result = upscaler_trt_model.infer({"input": img}, cudaStream)["output"]
+            logger.info(f"TRT output shape: {result.shape} dtype: {result.dtype}")
 
             if must_resize:
                 result = torch.nn.functional.interpolate(
