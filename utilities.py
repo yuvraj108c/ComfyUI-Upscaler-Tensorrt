@@ -2,6 +2,8 @@ import requests
 from tqdm import tqdm
 import logging
 import sys
+import os
+import json
 
 class ColoredLogger:
     COLORS = {
@@ -74,6 +76,8 @@ class ColoredLogger:
     def critical(self, message):
         self.logger.critical(f"{self.COLORS['MAGENTA']}{message}{self.COLORS['RESET']}")
 
+logger = ColoredLogger("ComfyUI-Upscaler-Tensorrt")
+
 def download_file(url, save_path):
     """
     Download a file from URL with progress bar
@@ -136,3 +140,32 @@ def get_final_resolutions(width, height, resize_to, scale=4):
         final_height = temp
 
     return (int(final_width), int(final_height)) # must be whole numbers
+
+def load_node_config(config_filename="load_upscaler_config.json"):
+    current_dir = os.path.dirname(__file__)
+    config_path = os.path.join(current_dir, config_filename)
+
+    default_config = {
+        "models": {
+            "4x-UltraSharp": {"path": "models/4x-UltraSharp.engine", "scale": 4}
+        },
+        "precision": {
+            "options": ["fp16", "fp32"],
+            "default": "fp16",
+            "tooltip": "Default precision"
+        }
+    }
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        logger.info(f"Loaded config: {config_filename}")
+        return config
+    except Exception as e:
+        logger.warning(f"Config load failed: {e}, using fallback")
+        return default_config
+
+LOAD_UPSCALER_NODE_CONFIG = load_node_config()
+
+def get_model_scale(model_name):
+    LOAD_UPSCALER_NODE_CONFIG = load_node_config()
+    return LOAD_UPSCALER_NODE_CONFIG.get("models", {}).get(model_name, {}).get("scale", 4)

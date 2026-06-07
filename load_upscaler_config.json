@@ -1,24 +1,64 @@
 {
-  "model": {
-    "options": [
-      "4x-AnimeSharp",
-      "4x-UltraSharp",
-      "4x-WTP-UDS-Esrgan",
-      "4x_NMKD-Siax_200k",
-      "4x_RealisticRescaler_100000_G",
-      "4x_foolhardy_Remacri",
-      "RealESRGAN_x4",
-      "4xNomos2_otf_esrgan",
-      "4x_UniversalUpscalerV2-Neutral_115000_swaG",
-      "4x-ClearRealityV1",
-      "4x-UltraSharpV2_Lite"
-    ],
-    "default": "4x-UltraSharp",
-    "tooltip": "These models have been tested with tensorrt. Loaded from config."
+  "models": {
+    "4x-AnimeSharp": {
+      "path": "models/4x-AnimeSharp.engine",
+      "scale": 4
+    },
+    "4x-UltraSharp": {
+      "path": "models/4x-UltraSharp.engine",
+      "scale": 4
+    },
+    "4x-WTP-UDS-Esrgan": {
+      "path": "models/4x-WTP-UDS-Esrgan.engine",
+      "scale": 4
+    },
+    "4x_NMKD-Siax_200k": {
+      "path": "models/4x_NMKD-Siax_200k.engine",
+      "scale": 4
+    },
+    "4x_RealisticRescaler_100000_G": {
+      "path": "models/4x_RealisticRescaler_100000_G.engine",
+      "scale": 4
+    },
+    "4x_foolhardy_Remacri": {
+      "path": "models/4x_foolhardy_Remacri.engine",
+      "scale": 4
+    },
+    "RealESRGAN_x4": {
+      "path": "models/RealESRGAN_x4.engine",
+      "scale": 4
+    },
+    "4xNomos2_otf_esrgan": {
+      "path": "models/4xNomos2_otf_esrgan.engine",
+      "scale": 4
+    },
+    "4x_UniversalUpscalerV2-Neutral_115000_swaG": {
+      "path": "models/4x_UniversalUpscalerV2-Neutral_115000_swaG.engine",
+      "scale": 4
+    },
+    "4x-ClearRealityV1": {
+      "path": "models/4x-ClearRealityV1.engine",
+      "scale": 4
+    },
+    "4x-UltraSharpV2_Lite": {
+      "path": "models/4x-UltraSharpV2_Lite.engine",
+      "scale": 4
+    },
+    "2x-Generic": {
+      "path": "models/2x-Generic.engine",
+      "scale": 2
+    },
+    "1x-SkinDetail_Enhancer": {
+      "path": "models/1x-SkinDetail_Enhancer.engine",
+      "scale": 1
+    }
   },
+  "IMAGE_DIM_MIN": 256,
+  "IMAGE_DIM_OPT": 512,
+  "IMAGE_DIM_MAX": 1280,
   "precision": {
     "options": ["fp16", "fp32"],
     "default": "fp16",
-    "tooltip": "Precision to build the tensorrt engines. Loaded from config."
+    "tooltip": "Precision used when building TensorRT engines"
   }
 }
