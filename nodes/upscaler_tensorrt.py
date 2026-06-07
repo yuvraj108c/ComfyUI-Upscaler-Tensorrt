@@ -5,6 +5,7 @@ from comfy.utils import ProgressBar
 from ..trt_utilities import Engine
 from ..utilities import logger, get_final_resolutions, get_model_scale, LOAD_UPSCALER_NODE_CONFIG
 import comfy.model_management as mm
+from tqdm import tqdm
 
 IMAGE_DIM_MIN = LOAD_UPSCALER_NODE_CONFIG.get("IMAGE_DIM_MIN")
 IMAGE_DIM_OPT = LOAD_UPSCALER_NODE_CONFIG.get("IMAGE_DIM_OPT")
@@ -81,9 +82,16 @@ class UpscalerTensorrt:
 
         must_resize = (W * scale != final_width or H * scale != final_height)
 
+        bar_format = "[\033[94mComfyUI-Upscaler-Tensorrt\033[0m|\033[92mINFO\033[0m] - \033[92m{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
+        progress_bar = tqdm(
+            total=B,
+            desc="Upscaling",
+            bar_format=bar_format,
+            disable=(B == 1)
+        )
+
         for i, img in enumerate(images_list):
             result = upscaler_trt_model.infer({"input": img}, cudaStream)["output"]
-            logger.info(f"TRT output shape: {result.shape} dtype: {result.dtype}")
 
             if must_resize:
                 result = torch.nn.functional.interpolate(
@@ -95,6 +103,7 @@ class UpscalerTensorrt:
 
             upscaled_frames[i] = result.to(mm.intermediate_device())
             pbar.update(1)
+            progress_bar.update(1)
 
         output = upscaled_frames.permute(0, 2, 3, 1)
 
