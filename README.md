@@ -11,7 +11,7 @@
 
 This project provides a [Tensorrt](https://github.com/NVIDIA/TensorRT) implementation for fast image upscaling using models inside ComfyUI (2-4x faster)
 
-**Last tested**: 12 January 2026 (ComfyUI v0.8.2@c623804 | Torch 2.9.1 | Tensorrt 10.14.1.48 | Python 3.12.3 | RTX5090 | CUDA 13.1 | Ubuntu 24.04)
+**Last tested**: 07 June 2026 (ComfyUI v0.23.0 | Torch 2.12.0 | Python 3.12.3 | L40S | CUDA 13.0 | Ubuntu 24.04)
 
 <p align="center">
   <img src="assets/node_v3.png" style="height: 400px" />
@@ -58,6 +58,12 @@ cd ./ComfyUI-Upscaler-Tensorrt
 pip install -r requirements.txt
 ```
 
+Optionally, you can install and use [TensorRT-RTX](https://github.com/NVIDIA/TensorRT-RTX)
+
+```bash
+pip install tensorrt-rtx 
+```
+
 ## 🛠️ Supported Models
 
 - These upscaler models have been tested to work with Tensorrt. Onnx are available [here](https://huggingface.co/yuvraj108c/ComfyUI-Upscaler-Onnx/tree/main)
@@ -91,13 +97,16 @@ pip install -r requirements.txt
 - If you've tested another working tensorrt model, let me know to add it officially to this node
 
 ## 🚨 Updates
+### 07 June 2026
+- Add support for [TensorRT-RTX](https://github.com/NVIDIA/TensorRT-RTX) ([PR#82](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/82) by [@tangalbert919](https://github.com/tangalbert919))
+  
 ### 12 January 2026
 - Add more resizing scale factors
 - Add custom resolution resizing
 
 ### 27 August 2025
 - Support 4x-UltraSharpV2_Lite, 4x_UniversalUpscalerV2-Neutral_115000_swaG, 4x-ClearRealityV1
-- Load models from config [PR#57](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/57)
+- Load models from config [PR#57](https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/57) by [@NeoAnthropocene](https://github.com/NeoAnthropocene)
 
 ### 30 April 2025
 - Merge https://github.com/yuvraj108c/ComfyUI-Upscaler-Tensorrt/pull/48 by @BiiirdPrograms to fix soft-lock by raising an error when input image dimensions unsupported
