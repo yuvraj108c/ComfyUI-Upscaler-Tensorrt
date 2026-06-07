@@ -74,6 +74,7 @@ class UpscalerTensorrt:
                 "resize_to": (["none", "custom", "HD", "FHD", "2k", "4k", "1x", "1.5x", "2x", "2.5x", "3x", "3.5x", "4x", "5x", "6x", "7x", "8x", "9x", "10x"], {"tooltip": "Resize the upscaled image to fixed resolutions, optional"}),
                 "resize_width": ("INT", {"default": 1024, "min": 1, "max": 8192}),
                 "resize_height": ("INT", {"default": 1024, "min": 1, "max": 8192}),
+                "model_type": (["x4", "x2", "x1"], {"default": "x4", "tooltip": "Model upscale factor (MUST match model type x1/x2/x4!)"}),
             }
         }
     RETURN_NAMES = ("IMAGE",)
@@ -86,6 +87,9 @@ class UpscalerTensorrt:
         images = kwargs.get("images")
         upscaler_trt_model = kwargs.get("upscaler_trt_model")
         resize_to = kwargs.get("resize_to")
+        model_type = kwargs.get("model_type")
+
+        scale = {"x1": 1, "x2": 2, "x4": 4}[model_type]
 
         images_bchw = images.permute(0, 3, 1, 2)
         B, C, H, W = images_bchw.shape
@@ -97,14 +101,17 @@ class UpscalerTensorrt:
         if resize_to == "custom":
             final_width = kwargs.get("resize_width")
             final_height = kwargs.get("resize_height")
+        elif resize_to == "none":
+            final_width = W*scale
+            final_height = H*scale
         else:
-            final_width, final_height = get_final_resolutions(W, H, resize_to)
+            final_width, final_height = get_final_resolutions(W, H, resize_to, scale)
 
-        logger.info(f"Upscaling {B} images from H:{H}, W:{W} to H:{H*4}, W:{W*4} | Final resolution: H:{final_height}, W:{final_width} | resize_to: {resize_to}")
+        logger.info(f"Upscaling {B} images from H:{H}, W:{W} to H:{H*scale}, W:{W*scale} | Final resolution: H:{final_height}, W:{final_width} | resize_to: {resize_to}")
 
         shape_dict = {
             "input": {"shape": (1, 3, H, W)},
-            "output": {"shape": (1, 3, H*4, W*4)},
+            "output": {"shape": (1, 3, H*scale, W*scale)},
         }
         upscaler_trt_model.activate()
         upscaler_trt_model.allocate_buffers(shape_dict=shape_dict)
@@ -114,7 +121,7 @@ class UpscalerTensorrt:
         images_list = list(torch.split(images_bchw, split_size_or_sections=1))
 
         upscaled_frames = torch.empty((B, C, final_height, final_width), dtype=torch.float32, device=mm.intermediate_device())
-        must_resize = W*4 != final_width or H*4 != final_height
+        must_resize = W*scale != final_width or H*scale != final_height
 
         for i, img in enumerate(images_list):
             result = upscaler_trt_model.infer({"input": img}, cudaStream)
