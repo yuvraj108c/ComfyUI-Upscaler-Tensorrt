@@ -7,7 +7,9 @@ from .trt_utilities import Engine
 from .utilities import download_file, ColoredLogger, get_final_resolutions
 import comfy.model_management as mm
 import time
-import json # <--- Import json module
+import json 
+
+logger = ColoredLogger("ComfyUI-Upscaler-Tensorrt")
 
 # Support TensorRT-RTX
 TENSORRT_RTX_AVAILABLE = False
@@ -15,10 +17,10 @@ import importlib
 if importlib.util.find_spec('tensorrt_rtx') is not None:
     import tensorrt_rtx as tensorrt
     TENSORRT_RTX_AVAILABLE = True
+    logger.info("Using Tensorrt RTX")
 else:
     import tensorrt
 
-logger = ColoredLogger("ComfyUI-Upscaler-Tensorrt")
 
 IMAGE_DIM_MIN = 256
 IMAGE_DIM_OPT = 512
