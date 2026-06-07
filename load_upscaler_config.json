@@ -1,24 +1,64 @@
 {
-  "model": {
-    "options": [
-      "4x-AnimeSharp",
-      "4x-UltraSharp",
-      "4x-WTP-UDS-Esrgan",
-      "4x_NMKD-Siax_200k",
-      "4x_RealisticRescaler_100000_G",
-      "4x_foolhardy_Remacri",
-      "RealESRGAN_x4",
-      "4xNomos2_otf_esrgan",
-      "4x_UniversalUpscalerV2-Neutral_115000_swaG",
-      "4x-ClearRealityV1",
-      "4x-UltraSharpV2_Lite"
-    ],
-    "default": "4x-UltraSharp",
-    "tooltip": "These models have been tested with tensorrt. Loaded from config."
-  },
+  "models": [
+    {
+      "name": "4x-AnimeSharp",
+      "scale": 4
+    },
+    {
+      "name": "4x-UltraSharp",
+      "scale": 4
+    },
+    {
+      "name": "4x-WTP-UDS-Esrgan",
+      "scale": 4
+    },
+    {
+      "name": "4x_NMKD-Siax_200k",
+      "scale": 4
+    },
+    {
+      "name": "4x_RealisticRescaler_100000_G",
+      "scale": 4
+    },
+    {
+      "name": "4x_foolhardy_Remacri",
+      "scale": 4
+    },
+    {
+      "name": "RealESRGAN_x4",
+      "scale": 4
+    },
+    {
+      "name": "4xNomos2_otf_esrgan",
+      "scale": 4
+    },
+    {
+      "name": "4x_UniversalUpscalerV2-Neutral_115000_swaG",
+      "scale": 4
+    },
+    {
+      "name": "4x-ClearRealityV1",
+      "scale": 4
+    },
+    {
+      "name": "4x-UltraSharpV2_Lite",
+      "scale": 4
+    },
+    {
+      "name": "2x-ESRGAN",
+      "scale": 2
+    },
+    {
+      "name": "1x-ITF-SkinDiffDetail-Lite-v1",
+      "scale": 1
+    }
+  ],
+  "IMAGE_DIM_MIN": 256,
+  "IMAGE_DIM_OPT": 512,
+  "IMAGE_DIM_MAX": 1280,
   "precision": {
     "options": ["fp16", "fp32"],
     "default": "fp16",
-    "tooltip": "Precision to build the tensorrt engines. Loaded from config."
+    "tooltip": "Precision used when building TensorRTs"
   }
 }
