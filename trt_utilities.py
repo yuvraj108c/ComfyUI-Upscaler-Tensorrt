@@ -214,7 +214,7 @@ class Engine:
         config.progress_monitor = TQDMProgressMonitor()
 
         # TensorRT-RTX only allows strongly typed networks, so precision is dependent on the model
-        config.set_flag(trt.BuilderFlag.FP16) if fp16 and not TENSORRT_RTX_AVAILABLE else None
+        config.set_flag(trt.BuilderFlag.FP16) if fp16 and not (TENSORRT_RTX_AVAILABLE or trt.__version__ >= "11.0.0") else None
         config.set_flag(trt.BuilderFlag.REFIT) if enable_refit else None
 
         profiles = copy.deepcopy(p)
