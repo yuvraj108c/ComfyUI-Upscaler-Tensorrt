@@ -1,3 +1,5 @@
 tensorrt
 polygraphy
 requests
+onnx
+nvidia-modelopt
