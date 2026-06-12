@@ -70,6 +70,9 @@ class LoadUpscalerTensorrtModel:
                 mm.soft_empty_cache()
                 s = time.time()
                 engine = Engine(tensorrt_model_path)
+                if precision == "fp16" and (TENSORRT_RTX_AVAILABLE or trt.__version__ >= "11.0.0"):
+                    logger.info("TensorRT-RTX or TensorRT 11.0.0 detected. Converting ONNX to fp16")
+                    onnx_model_path = engine.convert_to_fp16(onnx_model_path)
                 engine.build(
                     onnx_path=onnx_model_path,
                     fp16= True if precision == "fp16" and not TENSORRT_RTX_AVAILABLE else False,

@@ -29,6 +29,8 @@ from polygraphy.backend.trt import (
     save_engine,
 )
 from polygraphy.logger import G_LOGGER
+import modelopt.onnx.autocast as autocast
+import onnx
 
 # Support TensorRT-RTX
 TENSORRT_RTX_AVAILABLE = False
@@ -170,6 +172,16 @@ class Engine:
         self.tensors = OrderedDict()
         self.inputs = {}
         self.outputs = {}
+    
+    def convert_to_fp16(self, onnx_path):
+        converted_model = autocast.convert_to_mixed_precision(
+            onnx_path=onnx_path,
+            low_precision_dtype="fp16",
+            keep_io_types=True
+        )
+        onnx_fp16_path = onnx_path.replace(".onnx", "_fp16.onnx")
+        onnx.save(converted_model, onnx_fp16_path)
+        return onnx_fp16_path
 
     def build(
         self,
@@ -214,7 +226,7 @@ class Engine:
         config.progress_monitor = TQDMProgressMonitor()
 
         # TensorRT-RTX only allows strongly typed networks, so precision is dependent on the model
-        config.set_flag(trt.BuilderFlag.FP16) if fp16 and not TENSORRT_RTX_AVAILABLE else None
+        config.set_flag(trt.BuilderFlag.FP16) if fp16 and not (TENSORRT_RTX_AVAILABLE or trt.__version__ >= "11.0.0") else None
         config.set_flag(trt.BuilderFlag.REFIT) if enable_refit else None
 
         profiles = copy.deepcopy(p)
