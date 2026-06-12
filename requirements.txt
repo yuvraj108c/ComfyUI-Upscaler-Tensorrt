@@ -2,4 +2,5 @@ tensorrt
 polygraphy
 requests
 onnx
-nvidia-modelopt
+onnxruntime-gpu
+nvidia-modelopt[all]
